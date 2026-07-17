@@ -1,0 +1,141 @@
+import { useNavigate } from 'react-router-dom'
+import { AssetIcon, ICON, IMG } from '../components/icons'
+import StatusBar from '../components/StatusBar'
+import { usePayment } from '../payment'
+
+interface ServiceItem {
+  icon: string
+  title: string
+  subtitle: string
+}
+
+const groups: { label: string; items: ServiceItem[] }[] = [
+  {
+    label: 'Mobile',
+    items: [
+      { icon: ICON.mobileSim, title: '9111 2222', subtitle: '5G+ Unlimited Core' },
+      { icon: ICON.mobileSim, title: '9822 4488', subtitle: '5G Senior' },
+    ],
+  },
+  {
+    label: 'Prepaid',
+    items: [{ icon: ICON.mobileSim, title: '9134 1396', subtitle: 'Prepaid' }],
+  },
+  {
+    label: 'Broadband',
+    items: [
+      {
+        icon: ICON.internet,
+        title: 'Blk 511, Ocean Avenue, #12-345, 123456',
+        subtitle: 'UltraSpeed 10Gbps',
+      },
+      { icon: ICON.internet, title: '9111 2222', subtitle: 'Digital voice home' },
+    ],
+  },
+  {
+    label: 'Entertainment',
+    items: [
+      { icon: ICON.wifi, title: 'StarHub TV+', subtitle: 'Entertainment plan' },
+    ],
+  },
+  {
+    label: 'Pay Later plans',
+    items: [
+      { icon: ICON.payLater, title: 'Apple iPhone 17 Pro', subtitle: '12-month plan' },
+      { icon: ICON.payLater, title: 'Samsung Galaxy S26', subtitle: '24-month plan' },
+      { icon: ICON.payLater, title: 'iPad Pro 13"', subtitle: '12-month plan' },
+    ],
+  },
+]
+
+export default function PaymentByServices() {
+  const navigate = useNavigate()
+  const { setUpdateCtx } = usePayment()
+
+  return (
+    <div className="relative flex min-h-full flex-col bg-[#fafafa]">
+      {/* Green banner (flat rectangle) */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[220px] overflow-hidden bg-sh-green"
+      >
+        <img
+          src={IMG.homePortal}
+          alt=""
+          className="absolute left-[-133px] top-[22px] h-[948px] w-[492px] max-w-none"
+        />
+        <div
+          className="absolute inset-x-0 top-0 h-[60px]"
+          style={{
+            background:
+              'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(102,102,102,0) 78.369%)',
+          }}
+        />
+      </div>
+
+      <StatusBar />
+
+      {/* Back + title */}
+      <div className="relative z-10 px-5 pt-[18px]">
+        <button
+          onClick={() => navigate('/pay')}
+          className="flex size-10 items-center justify-center rounded-full bg-white shadow-[0_2px_4px_rgba(20,20,20,0.1)] active:scale-95"
+        >
+          <AssetIcon src={ICON.arrow} size={22} className="rotate-180" />
+        </button>
+        <h1 className="mt-3 text-[28px] font-black leading-9 text-sh-ink">
+          Manage payment by services
+        </h1>
+      </div>
+
+      {/* White content panel — 24px top / 20px sides / 48px bottom.
+          Its rounded top corners tuck up under the green header. */}
+      <div className="relative z-10 mt-3 flex-1 rounded-t-[24px] bg-[#fafafa] px-5 pb-12 pt-6">
+        {groups.map((g) => (
+          <section key={g.label} className="mb-6 last:mb-0">
+            <h2 className="mb-3 text-[16px] font-black text-sh-ink">{g.label}</h2>
+            <div className="flex flex-col gap-2">
+              {g.items.map((it, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setUpdateCtx({
+                      description: null,
+                      services: [
+                        { icon: it.icon, eyebrow: g.label, title: it.title },
+                      ],
+                      current: {
+                        brand: 'visa',
+                        last4: '1234',
+                        expires: 'Expires 02/28',
+                      },
+                      options: [
+                        { id: 'amex', brand: 'amex', last4: '8824', status: 'Expires 04/28' },
+                        { id: 'mc', brand: 'mastercard', last4: '1112', status: 'Expires 06/28' },
+                      ],
+                      back: '/payment-by-services',
+                      doneTo: '/payment-by-services',
+                    })
+                    navigate('/update-payment')
+                  }}
+                  className="flex w-full items-start gap-3 rounded-[24px] bg-white p-4 text-left shadow-[inset_0_0_0_1px_#dadbda,0_2px_8px_rgba(20,20,20,0.1)] active:scale-[0.99]"
+                >
+                  <AssetIcon src={it.icon} size={32} className="shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-[16px] font-bold leading-5 text-sh-ink">
+                      {it.title}
+                    </p>
+                    <p className="mt-0.5 text-[14px] leading-5 text-[#727272]">
+                      {it.subtitle}
+                    </p>
+                  </div>
+                  <AssetIcon src={ICON.chevron} size={20} className="shrink-0 self-center" />
+                </button>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,152 @@
+@import 'tailwindcss';
+
+/* StarHub design tokens (from Figma: Master Pay Journey) */
+@theme {
+  --font-sans: 'Lato', system-ui, -apple-system, sans-serif;
+
+  --color-sh-green: #1ed760; /* Electric Green / Primary */
+  --color-sh-green-text: #0b712f; /* Text/Primary-onLight */
+  --color-sh-green-dark: #045220; /* Green/1000 */
+  --color-sh-green-border: #a8edb2; /* Border/Primary/Lighter */
+  --color-sh-ink: #141414; /* Neutral Darkest */
+  --color-sh-pink: #e63888; /* Accent 1 */
+  --color-sh-blue: #0062ff; /* Blue/700 */
+  --color-sh-surface: #efefef; /* Neutral-Light */
+  --color-sh-line: #dadbda; /* Border/Neutral Secondary */
+
+  --radius-card: 24px; /* Corner Radius/radius-500 */
+
+  --shadow-sh-sm: 0 2px 8px #1414141a; /* Drop Shadow/100 */
+  --shadow-sh-md: 0 4px 12px #1414141a; /* Drop Shadow/200 */
+  --shadow-sh-lg: 0 16px 32px #1414141a; /* Drop Shadow/400 */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide scrollbars inside the phone screen for a native feel */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Bottom-sheet transitions */
+@keyframes sheet-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes sheet-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes sheet-down {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+.sheet-scrim {
+  animation: sheet-fade 0.2s ease-out;
+}
+.sheet-panel {
+  animation: sheet-up 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.sheet-scrim-out {
+  animation: sheet-fade-out 0.26s ease-in forwards;
+}
+.sheet-panel-out {
+  animation: sheet-down 0.26s ease-in forwards;
+}
+
+/* Success screen entrance */
+@keyframes success-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes success-rise {
+  from {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.success-pop {
+  animation: success-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.success-rise {
+  animation: success-rise 0.45s ease-out both;
+}
+@keyframes screen-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+}
+.screen-exit {
+  animation: screen-exit 0.32s ease-in forwards;
+}
+
+/* Subtle page transition on route change */
+@keyframes page-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.page-fade {
+  animation: page-fade 0.3s ease-in-out;
+}
+
