@@ -300,12 +300,20 @@ export default function Pay() {
               <div className="-mx-5 bg-sh-surface px-5 py-2 text-[14px] font-bold leading-[18px] text-sh-ink">
                 {g.month}
               </div>
-              {g.days.map((d) => (
+              {g.days.map((d, di) => (
                 <div key={d.date}>
                   <p className="pt-3 text-[14px] font-bold text-sh-ink">{d.date}</p>
-                  {d.txns.map((t, i) => (
-                    <TransactionRow key={`${d.date}-${i}`} txn={t} divider />
-                  ))}
+                  {d.txns.map((t, i) => {
+                    const isLastInMonth =
+                      di === g.days.length - 1 && i === d.txns.length - 1
+                    return (
+                      <TransactionRow
+                        key={`${d.date}-${i}`}
+                        txn={t}
+                        divider={!isLastInMonth}
+                      />
+                    )
+                  })}
                 </div>
               ))}
             </div>
