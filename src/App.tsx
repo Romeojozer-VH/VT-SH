@@ -23,6 +23,9 @@ import AddEgiroAccount from './screens/AddEgiroAccount'
 import EgiroBankAuth from './screens/EgiroBankAuth'
 
 const STORAGE_KEY = 'sh-phone-framed'
+const FIT_KEY = 'sh-phone-fit'
+const FRAME_WIDTH = 418
+const FRAME_HEIGHT = 844
 
 export default function App() {
   const navigate = useNavigate()
@@ -32,6 +35,11 @@ export default function App() {
     const saved = localStorage.getItem(STORAGE_KEY)
     return saved === null ? true : saved === 'true'
   })
+  const [fit, setFit] = useState<boolean>(() => {
+    const saved = localStorage.getItem(FIT_KEY)
+    return saved === null ? true : saved === 'true'
+  })
+  const [scale, setScale] = useState(1)
   const [paid, setPaid] = useState(false)
   const [deletedIds, setDeletedIds] = useState<string[]>([])
   const deleteCard = (id: string) =>
@@ -61,6 +69,29 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, String(framed))
   }, [framed])
+
+  useEffect(() => {
+    localStorage.setItem(FIT_KEY, String(fit))
+  }, [fit])
+
+  // Scale the fixed-size device bezel down so it always fits the viewport
+  // (only relevant when framed — the frameless view is already fluid).
+  useEffect(() => {
+    if (!framed || !fit) {
+      setScale(1)
+      return
+    }
+    const compute = () => {
+      const availableWidth = window.innerWidth - 48
+      const availableHeight = window.innerHeight - 64
+      setScale(
+        Math.min(1, availableWidth / FRAME_WIDTH, availableHeight / FRAME_HEIGHT),
+      )
+    }
+    compute()
+    window.addEventListener('resize', compute)
+    return () => window.removeEventListener('resize', compute)
+  }, [framed, fit])
 
   const resetPrototype = () => {
     setPaid(false)
@@ -97,6 +128,15 @@ export default function App() {
             <span>📱</span>
             Frame: {framed ? 'On' : 'Off'}
           </button>
+          {framed && (
+            <button
+              onClick={() => setFit((v) => !v)}
+              className="flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-sh-ink shadow-md backdrop-blur transition hover:bg-white"
+            >
+              <span>⤢</span>
+              Fit to screen: {fit ? 'On' : 'Off'}
+            </button>
+          )}
           <button
             onClick={resetPrototype}
             className="flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-sh-ink shadow-md backdrop-blur transition hover:bg-white"
@@ -106,39 +146,60 @@ export default function App() {
           </button>
         </div>
 
-        <PhoneFrame
-          framed={framed}
-          bottomBar={showNav ? <BottomNav /> : undefined}
-          overlay={
-            cardAddedOpen && addedCard ? (
-              <CardAddedSheet
-                brand={addedCard.brand}
-                last4={addedCard.last4}
-                closing={cardAddedClosing}
-                onClose={closeCardAdded}
-              />
-            ) : undefined
+        <div
+          style={
+            framed
+              ? { width: FRAME_WIDTH * scale, height: FRAME_HEIGHT * scale }
+              : undefined
           }
         >
-          <Routes key={resetKey}>
-            <Route path="/" element={<Home />} />
-            <Route path="/pay" element={<Pay />} />
-            <Route path="/payment-methods" element={<PaymentMethods />} />
-            <Route path="/payment-by-services" element={<PaymentByServices />} />
-            <Route path="/manage-card" element={<ManageCard />} />
-            <Route path="/update-payment" element={<UpdatePaymentMethod />} />
-            <Route path="/card-updated" element={<CardUpdated />} />
-            <Route path="/gateway" element={<Gateway />} />
-            <Route path="/review" element={<Review />} />
-            <Route path="/redirecting" element={<Redirecting />} />
-            <Route path="/bank" element={<BankOtp />} />
-            <Route path="/success" element={<Success />} />
-            <Route path="/paylater-plans" element={<PayLaterPlans />} />
-            <Route path="/paylater-plan-detail" element={<PayLaterPlanDetail />} />
-            <Route path="/add-egiro" element={<AddEgiroAccount />} />
-            <Route path="/egiro-bank-auth" element={<EgiroBankAuth />} />
-          </Routes>
-        </PhoneFrame>
+          <div
+            style={
+              framed
+                ? {
+                    width: FRAME_WIDTH,
+                    height: FRAME_HEIGHT,
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'top left',
+                  }
+                : undefined
+            }
+          >
+            <PhoneFrame
+              framed={framed}
+              bottomBar={showNav ? <BottomNav /> : undefined}
+              overlay={
+                cardAddedOpen && addedCard ? (
+                  <CardAddedSheet
+                    brand={addedCard.brand}
+                    last4={addedCard.last4}
+                    closing={cardAddedClosing}
+                    onClose={closeCardAdded}
+                  />
+                ) : undefined
+              }
+            >
+              <Routes key={resetKey}>
+                <Route path="/" element={<Home />} />
+                <Route path="/pay" element={<Pay />} />
+                <Route path="/payment-methods" element={<PaymentMethods />} />
+                <Route path="/payment-by-services" element={<PaymentByServices />} />
+                <Route path="/manage-card" element={<ManageCard />} />
+                <Route path="/update-payment" element={<UpdatePaymentMethod />} />
+                <Route path="/card-updated" element={<CardUpdated />} />
+                <Route path="/gateway" element={<Gateway />} />
+                <Route path="/review" element={<Review />} />
+                <Route path="/redirecting" element={<Redirecting />} />
+                <Route path="/bank" element={<BankOtp />} />
+                <Route path="/success" element={<Success />} />
+                <Route path="/paylater-plans" element={<PayLaterPlans />} />
+                <Route path="/paylater-plan-detail" element={<PayLaterPlanDetail />} />
+                <Route path="/add-egiro" element={<AddEgiroAccount />} />
+                <Route path="/egiro-bank-auth" element={<EgiroBankAuth />} />
+              </Routes>
+            </PhoneFrame>
+          </div>
+        </div>
       </div>
     </PaymentContext.Provider>
   )
