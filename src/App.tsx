@@ -17,6 +17,10 @@ import type { AddedCard, UpdateConfig } from './payment'
 import Redirecting from './screens/Redirecting'
 import BankOtp from './screens/BankOtp'
 import Success from './screens/Success'
+import PayLaterPlans from './screens/PayLaterPlans'
+import PayLaterPlanDetail from './screens/PayLaterPlanDetail'
+import AddEgiroAccount from './screens/AddEgiroAccount'
+import EgiroBankAuth from './screens/EgiroBankAuth'
 
 const STORAGE_KEY = 'sh-phone-framed'
 
@@ -129,6 +133,10 @@ export default function App() {
             <Route path="/redirecting" element={<Redirecting />} />
             <Route path="/bank" element={<BankOtp />} />
             <Route path="/success" element={<Success />} />
+            <Route path="/paylater-plans" element={<PayLaterPlans />} />
+            <Route path="/paylater-plan-detail" element={<PayLaterPlanDetail />} />
+            <Route path="/add-egiro" element={<AddEgiroAccount />} />
+            <Route path="/egiro-bank-auth" element={<EgiroBankAuth />} />
           </Routes>
         </PhoneFrame>
       </div>

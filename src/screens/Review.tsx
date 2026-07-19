@@ -4,17 +4,28 @@ import { AssetIcon, MaskIcon, ICON, IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
 import CardLogo, { type CardBrand } from '../components/CardLogo'
 import AddPaymentSheet from '../components/AddPaymentSheet'
-import { usePayment } from '../payment'
+import { SheetPortal } from '../components/sheetPortal'
+import { usePayment, type PaymentFlowConfig } from '../payment'
 
 const PAGE_BG = '#fafafa'
 
-const lineItems: [string, string][] = [
-  ['5G+ Unlimited Core', '$42.00'],
-  ['Block Overseas Calls', '$0.00'],
-  ['Block Overseas SMSes', '$0.00'],
-  ['SmartSupport', '$14.26'],
-  ['CyberProtect', '$10.18'],
-]
+const DEFAULT_RECEIPT: Required<Omit<NonNullable<PaymentFlowConfig['receipt']>, 'lineItems'>> & {
+  lineItems: [string, string][]
+} = {
+  eyebrow: 'Mobile plan',
+  name: '9111 2222',
+  description: '5G+ Unlimited Core',
+  date: '22 May 2026',
+  amount: '$66.44',
+  statusLabel: 'Overdue',
+  lineItems: [
+    ['5G+ Unlimited Core', '$42.00'],
+    ['Block Overseas Calls', '$0.00'],
+    ['Block Overseas SMSes', '$0.00'],
+    ['SmartSupport', '$14.26'],
+    ['CyberProtect', '$10.18'],
+  ],
+}
 
 interface Card {
   id: string
@@ -45,24 +56,27 @@ const TearLine = forwardRef<HTMLDivElement>((_, ref) => (
 TearLine.displayName = 'TearLine'
 
 /* receipt-style bill */
-function Bill() {
+function Bill({ receipt }: { receipt: typeof DEFAULT_RECEIPT }) {
   const bodyRef = useRef<HTMLDivElement>(null)
   const t1 = useRef<HTMLDivElement>(null)
   const t2 = useRef<HTMLDivElement>(null)
+  const hasLineItems = receipt.lineItems.length > 0
   const [mask, setMask] = useState<string | undefined>()
 
   useLayoutEffect(() => {
     const body = bodyRef.current
-    if (!body || !t1.current || !t2.current) return
+    if (!body || !t1.current) return
     const r = 10
     const y1 = t1.current.offsetTop + t1.current.offsetHeight / 2
-    const y2 = t2.current.offsetTop + t2.current.offsetHeight / 2
     const hole = (x: string, y: number) =>
       `radial-gradient(circle ${r}px at ${x} ${y}px, transparent ${r}px, #000 ${r + 0.5}px)`
-    setMask(
-      [hole('0%', y1), hole('100%', y1), hole('0%', y2), hole('100%', y2)].join(', '),
-    )
-  }, [])
+    const holes = [hole('0%', y1), hole('100%', y1)]
+    if (hasLineItems && t2.current) {
+      const y2 = t2.current.offsetTop + t2.current.offsetHeight / 2
+      holes.push(hole('0%', y2), hole('100%', y2))
+    }
+    setMask(holes.join(', '))
+  }, [hasLineItems])
 
   return (
     <>
@@ -108,38 +122,53 @@ function Bill() {
         <div className="flex items-start gap-2.5 px-4 pb-2 pt-[21px]">
           <div className="flex-1">
             <p className="text-[12px] font-bold leading-[14px] text-sh-green-text">
-              Mobile plan
+              {receipt.eyebrow}
             </p>
             <p className="mt-1 text-[16px] font-bold leading-5 text-sh-ink">
-              9111 2222
+              {receipt.name}
             </p>
-            <p className="text-[14px] leading-5 text-[#434343]">5G+ Unlimited Core</p>
+            {receipt.description && (
+              <p className="text-[14px] leading-5 text-[#434343]">
+                {receipt.description}
+              </p>
+            )}
           </div>
           <div className="flex flex-col items-end">
-            <p className="text-[12px] leading-4 text-[#727272]">22 May 2026</p>
-            <p className="text-[24px] font-black leading-8 text-sh-ink">$66.44</p>
-            <p className="text-[14px] font-bold leading-4 text-[#9a1a4a]">Overdue</p>
+            <p className="text-[12px] leading-4 text-[#727272]">{receipt.date}</p>
+            <p className="text-[24px] font-black leading-8 text-sh-ink">
+              {receipt.amount}
+            </p>
+            {receipt.statusLabel && (
+              <p className="text-[14px] font-bold leading-4 text-[#9a1a4a]">
+                {receipt.statusLabel}
+              </p>
+            )}
           </div>
         </div>
 
         <TearLine ref={t1} />
 
-        <div className="flex flex-col gap-2 px-4 py-3">
-          {lineItems.map(([name, price]) => (
-            <div key={name} className="flex items-center justify-between">
-              <p className="text-[14px] leading-5 text-[#727272]">{name}</p>
-              <p className="text-[14px] font-black leading-5 text-sh-ink">{price}</p>
+        {hasLineItems && (
+          <>
+            <div className="flex flex-col gap-2 px-4 py-3">
+              {receipt.lineItems.map(([name, price]) => (
+                <div key={name} className="flex items-center justify-between">
+                  <p className="text-[14px] leading-5 text-[#727272]">{name}</p>
+                  <p className="text-[14px] font-black leading-5 text-sh-ink">{price}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-
-        <TearLine ref={t2} />
+            <TearLine ref={t2} />
+          </>
+        )}
 
         <div className="flex items-center justify-between px-4 pb-[21px] pt-3">
           <p className="text-[14px] font-bold leading-5 text-[#727272]">
             Amount to be paid
           </p>
-          <p className="text-[14px] font-black leading-5 text-sh-ink">$XX.XX</p>
+          <p className="text-[14px] font-black leading-5 text-sh-ink">
+            {receipt.amount}
+          </p>
         </div>
       </div>
 
@@ -176,6 +205,7 @@ function ChangePaymentSheet({
   const canContinue = !!draft && !draft.expired
 
   return (
+    <SheetPortal>
     <div className="absolute inset-0 z-50 flex flex-col justify-end">
       <div
         className={`absolute inset-0 bg-[#141414]/85 ${closing ? 'sheet-scrim-out' : 'sheet-scrim'}`}
@@ -241,7 +271,11 @@ function ChangePaymentSheet({
                 </div>
                 <span
                   className={`flex size-5 shrink-0 items-center justify-center self-center rounded-full border-2 bg-white ${
-                    selected ? 'border-sh-green' : 'border-[#dadbda]'
+                    selected
+                      ? 'border-sh-green'
+                      : card.expired
+                        ? 'border-[#dadbda]'
+                        : 'border-[#b9b9b9]'
                   }`}
                 >
                   {selected && <span className="size-2.5 rounded-full bg-sh-green" />}
@@ -281,6 +315,7 @@ function ChangePaymentSheet({
         </button>
       </div>
     </div>
+    </SheetPortal>
   )
 }
 
@@ -306,6 +341,7 @@ function CvvSheet({
   }, [])
 
   return (
+    <SheetPortal>
     <div className="absolute inset-0 z-50 flex flex-col justify-end">
       <div
         className={`absolute inset-0 bg-[#141414]/85 ${closing ? 'sheet-scrim-out' : 'sheet-scrim'}`}
@@ -335,7 +371,9 @@ function CvvSheet({
         </h3>
 
         <div className="mt-6" onClick={() => inputRef.current?.focus()}>
-          <p className="text-[14px] font-black text-sh-ink">CVV</p>
+          <p className="text-[14px] font-black leading-[18px] tracking-[0.15px] text-sh-ink">
+            CVV
+          </p>
           <div className="relative mt-3 flex h-6 items-center gap-3">
             {[0, 1, 2].map((i) => (
               <span
@@ -356,7 +394,7 @@ function CvvSheet({
             />
           </div>
           <div className="mt-2 border-t border-sh-line" />
-          <p className="mt-2 text-[12px] text-[#727272]">3-digits</p>
+          <p className="mt-2 text-[14px] leading-5 text-[#434343]">3-digits</p>
         </div>
 
         <button
@@ -372,6 +410,7 @@ function CvvSheet({
         </button>
       </div>
     </div>
+    </SheetPortal>
   )
 }
 
@@ -380,7 +419,15 @@ export default function Review() {
   const navigate = useNavigate()
   const location = useLocation()
   const { addedCard, cardAddedOpen } = usePayment()
-  const [selectedId, setSelectedId] = useState('visa')
+
+  // captured once at mount so it survives the "add payment method" gateway
+  // round trip, which remounts this screen with different location.state
+  const [flow] = useState<PaymentFlowConfig | undefined>(
+    () => (location.state as { flow?: PaymentFlowConfig } | null)?.flow,
+  )
+  const receipt = { ...DEFAULT_RECEIPT, ...(flow?.receipt ?? {}) }
+
+  const [selectedId, setSelectedId] = useState(() => flow?.defaultCardId ?? 'visa')
   const [sheet, setSheet] = useState<'none' | 'payment' | 'cvv' | 'add'>('none')
   const [closing, setClosing] = useState(false)
   const [draftId, setDraftId] = useState('visa')
@@ -454,14 +501,14 @@ export default function Review() {
           <AssetIcon src={ICON.arrow} size={22} className="rotate-180" />
         </button>
         <h1 className="mt-3 text-[28px] font-black leading-9 text-sh-ink">
-          Review payment
+          {flow?.title ?? 'Review payment'}
         </h1>
       </div>
 
       {/* White content panel — 24px top / 20px sides / 48px bottom.
           Its rounded top corners tuck up under the green header. */}
       <div className="relative z-10 mt-3 flex flex-1 flex-col rounded-t-[24px] bg-[#fafafa] px-5 pb-12 pt-6">
-        <Bill />
+        <Bill receipt={receipt} />
 
         <h2 className="pb-4 pt-8 text-[16px] font-black leading-5 text-sh-ink">
           Payment
@@ -531,13 +578,16 @@ export default function Review() {
           closing={closing}
           onClose={requestClose}
           reopen="payment"
+          flow={flow}
         />
       )}
       {sheet === 'cvv' && (
         <CvvSheet
           last4={selected.last4}
           onClose={requestClose}
-          onProceed={() => navigate('/redirecting')}
+          onProceed={() =>
+            navigate('/redirecting', { state: { next: '/bank', flow } })
+          }
           closing={closing}
         />
       )}

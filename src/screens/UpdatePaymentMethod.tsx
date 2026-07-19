@@ -4,6 +4,7 @@ import { AssetIcon, MaskIcon, ICON, IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
 import CardLogo, { type CardBrand } from '../components/CardLogo'
 import AddPaymentSheet from '../components/AddPaymentSheet'
+import { SheetPortal } from '../components/sheetPortal'
 import {
   usePayment,
   type UpdateService,
@@ -215,7 +216,7 @@ export default function UpdatePaymentMethod() {
                   </div>
                   <span
                     className={`flex size-5 shrink-0 items-center justify-center self-center rounded-full border-2 bg-white ${
-                      isSel ? 'border-sh-green' : 'border-[#dadbda]'
+                      isSel ? 'border-sh-green' : 'border-[#b9b9b9]'
                     }`}
                   >
                     {isSel && <span className="size-2.5 rounded-full bg-sh-green" />}
@@ -261,6 +262,7 @@ export default function UpdatePaymentMethod() {
 
       {/* Review changes bottom sheet */}
       {sheetOpen && selected && (
+        <SheetPortal>
         <div className="absolute inset-0 z-50 flex flex-col justify-end">
           <div
             className={`absolute inset-0 bg-[#141414]/85 ${
@@ -362,6 +364,7 @@ export default function UpdatePaymentMethod() {
             </button>
           </div>
         </div>
+        </SheetPortal>
       )}
 
       {/* Add a payment method bottom sheet */}

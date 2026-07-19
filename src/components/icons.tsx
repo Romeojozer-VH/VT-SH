@@ -58,6 +58,12 @@ export const ICON = {
   alertTriangle: '/Icons/alert-triangle.svg',
   info: '/Icons/info-circle.svg',
   creditCard: '/Icons/credit-card.svg',
+  calendarRecurring: '/Icons/calendar-recurring.svg',
+  deviceMobile: '/Icons/device-mobile.svg',
+  payLaterRecurring: '/Icons/pay-later-recurring.svg',
+  savings: '/Icons/savings.svg',
+  helpCircle: '/Icons/help-circle.svg',
+  money03: '/Icons/money-03.svg',
   sim: '/Icons/Icon-1.svg',
   wifi: '/Icons/Icon.svg',
   diamond: '/Icons/Membership.svg',
@@ -87,8 +93,9 @@ export const ICON = {
 
 export const IMG = {
   homeBg: '/Images/Home%20BG.jpg',
+  hero: '/Images/Hero.jpg',
   homePortal: '/Illustrations/home-portal.svg',
-  momentCardBg: '/Illustrations/moment-card-bg.svg',
+  momentCardLatest: '/Images/Moment%20Card-Latest.jpg',
   receiptTop: '/Illustrations/receipt-top.svg',
   receiptBottom: '/Illustrations/receipt-bottom.svg',
   rewards: '/Images/Rewards.jpg',

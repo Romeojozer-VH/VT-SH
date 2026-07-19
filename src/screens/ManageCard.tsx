@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { AssetIcon, MaskIcon, ICON, IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
 import CardLogo, { type CardBrand } from '../components/CardLogo'
+import { SheetPortal } from '../components/sheetPortal'
 import { usePayment } from '../payment'
 
 interface CardInfo {
@@ -185,6 +186,7 @@ export default function ManageCard() {
 
       {/* "Can't delete yet" bottom sheet (card still has services) */}
       {sheet === 'blocked' && (
+        <SheetPortal>
         <div className="absolute inset-0 z-50 flex flex-col justify-end">
           <div
             className={`absolute inset-0 bg-[#141414]/85 ${
@@ -281,10 +283,12 @@ export default function ManageCard() {
             </button>
           </div>
         </div>
+        </SheetPortal>
       )}
 
       {/* "Review changes" confirm-remove sheet (card has no services) */}
       {sheet === 'confirm' && (
+        <SheetPortal>
         <div className="absolute inset-0 z-50 flex flex-col justify-end">
           <div
             className={`absolute inset-0 bg-[#141414]/85 ${
@@ -350,6 +354,7 @@ export default function ManageCard() {
             </button>
           </div>
         </div>
+        </SheetPortal>
       )}
     </div>
   )

@@ -1,15 +1,21 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
+import type { PaymentFlowConfig } from '../payment'
 
 export default function Success() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [leaving, setLeaving] = useState(false)
+
+  const flow = (location.state as { flow?: PaymentFlowConfig } | null)?.flow
+  const doneTo = flow?.doneTo ?? '/pay'
+  const doneToLabel = flow?.doneToLabel ?? 'Back to pay dashboard'
 
   const goToDashboard = () => {
     setLeaving(true)
-    setTimeout(() => navigate('/pay'), 300)
+    setTimeout(() => navigate(doneTo), 300)
   }
 
   return (
@@ -39,10 +45,11 @@ export default function Success() {
             className="success-pop h-[155px] w-auto"
           />
           <h1 className="success-rise mt-6 text-[24px] font-black text-sh-ink [animation-delay:200ms]">
-            Payment complete!
+            {flow?.successTitle ?? 'Payment complete!'}
           </h1>
           <p className="success-rise mt-3 max-w-[300px] text-[16px] leading-6 text-sh-ink [animation-delay:290ms]">
-            Your payment has been received and successfully processed.
+            {flow?.successDescription ??
+              'Your payment has been received and successfully processed.'}
           </p>
           <p className="success-rise mt-4 max-w-[300px] text-[16px] leading-6 text-sh-ink [animation-delay:380ms]">
             A confirmation has been sent to{' '}
@@ -54,7 +61,7 @@ export default function Success() {
           onClick={goToDashboard}
           className="success-rise h-14 w-full rounded-full bg-sh-green text-[16px] font-black text-sh-ink shadow-[0_8px_24px_rgba(20,20,20,0.12)] [animation-delay:470ms] active:scale-[0.99]"
         >
-          Back to pay dashboard
+          {doneToLabel}
         </button>
       </div>
     </div>

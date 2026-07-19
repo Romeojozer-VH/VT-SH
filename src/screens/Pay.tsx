@@ -12,7 +12,7 @@ const tabs = [
     label: 'Payment by services',
     to: '/payment-by-services',
   },
-  { icon: ICON.payLater, label: 'PayLater plans' },
+  { icon: ICON.payLater, label: 'PayLater plans', to: '/paylater-plans' },
 ]
 
 function SocketTab({
@@ -38,16 +38,11 @@ function SocketTab({
   )
 }
 
-/* ---------- payment-due card ---------- */
+/* ---------- payment-due card (only rendered while unpaid) ---------- */
 function PaymentDueCard() {
   const navigate = useNavigate()
-  const { paid } = usePayment()
   return (
-    <div
-      className={`flex flex-col gap-4 rounded-[24px] border-[1.5px] bg-white p-4 shadow-[0_2px_8px_rgba(20,20,20,0.1)] ${
-        paid ? 'border-sh-line' : 'border-[#9a1a4a]'
-      }`}
-    >
+    <div className="flex flex-col gap-4 rounded-[24px] border-[1.5px] border-[#9a1a4a] bg-white p-4 shadow-[0_2px_8px_rgba(20,20,20,0.1)]">
       <div className="flex gap-2">
         <AssetIcon src={ICON.mobileSim} size={32} className="shrink-0" />
         <div className="flex flex-1 gap-1">
@@ -62,36 +57,19 @@ function PaymentDueCard() {
             <p className="whitespace-nowrap text-[16px] font-black leading-5 text-sh-ink">
               $66.44
             </p>
-            {paid ? (
-              <span className="flex items-center gap-1 whitespace-nowrap text-[12px] font-bold leading-4 text-sh-green-text">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M5 13l4 4L19 7"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Paid
-              </span>
-            ) : (
-              <p className="whitespace-nowrap text-[12px] font-bold leading-4 text-[#9a1a4a]">
-                Due 5 Jul
-              </p>
-            )}
+            <p className="whitespace-nowrap text-[12px] font-bold leading-4 text-[#9a1a4a]">
+              Due 5 Jul
+            </p>
           </div>
         </div>
       </div>
-      {!paid && (
-        <button
-          onClick={() => navigate('/review')}
-          className="flex w-full items-center justify-center gap-1 rounded-full border border-sh-line bg-white py-2 text-[14px] font-black tracking-[0.15px] text-sh-ink shadow-[0_2px_4px_rgba(20,20,20,0.1)] active:scale-95"
-        >
-          Pay
-          <AssetIcon src={ICON.arrow} size={16} />
-        </button>
-      )}
+      <button
+        onClick={() => navigate('/review')}
+        className="flex w-full items-center justify-center gap-1 rounded-full border border-sh-line bg-white py-2 text-[14px] font-black tracking-[0.15px] text-sh-ink shadow-[0_2px_4px_rgba(20,20,20,0.1)] active:scale-95"
+      >
+        Pay
+        <AssetIcon src={ICON.arrow} size={16} />
+      </button>
     </div>
   )
 }
@@ -228,8 +206,35 @@ const moreGroups: typeof groups = [
 
 /* ================= PAY SCREEN ================= */
 export default function Pay() {
+  const { paid } = usePayment()
   const [loaded, setLoaded] = useState(false)
-  const allGroups = loaded ? [...groups, ...moreGroups] : groups
+  const latestPayment: typeof groups = paid
+    ? [
+        {
+          month: 'Jul 2026',
+          days: [
+            {
+              date: '5 Jul',
+              txns: [
+                {
+                  icon: ICON.mobileSim,
+                  eyebrow: 'Mobile',
+                  title: '9111 2222',
+                  desc: '5G+ Unlimited Core',
+                  card: true,
+                  amount: '-$66.44',
+                },
+              ],
+            },
+          ],
+        },
+      ]
+    : []
+  const allGroups = [
+    ...latestPayment,
+    ...groups,
+    ...(loaded ? moreGroups : []),
+  ]
   return (
     <div className="relative flex min-h-full flex-col bg-[#fafafa]">
       {/* Green banner background (flat rectangle) */}
@@ -271,17 +276,23 @@ export default function Pay() {
           Its rounded top corners tuck up under the green header; the tiles'
           12px bottom padding shows as green below them. */}
       <div className="relative z-10 flex flex-1 flex-col rounded-t-[24px] bg-[#fafafa] px-5 pb-12 pt-6">
-        {/* Payment due */}
-        <section>
-          <p className="mb-2 text-[16px] font-black leading-6 text-sh-ink">
-            Payment due
-          </p>
-          <PaymentDueCard />
-        </section>
+        {/* Payment due — disappears once paid */}
+        {!paid && (
+          <section>
+            <p className="mb-2 text-[16px] font-black leading-6 text-sh-ink">
+              Payment due
+            </p>
+            <PaymentDueCard />
+          </section>
+        )}
 
         {/* Past payment activity */}
         <section>
-          <h2 className="pb-4 pt-6 text-[16px] font-black leading-5 text-sh-ink">
+          <h2
+            className={`pb-4 text-[16px] font-black leading-5 text-sh-ink ${
+              paid ? 'pt-0' : 'pt-6'
+            }`}
+          >
             Past payment activity
           </h2>
           {allGroups.map((g) => (

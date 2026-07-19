@@ -1,22 +1,18 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ICON } from '../components/icons'
 import { SheetPortal } from '../components/sheetPortal'
 import { usePayment, type PaymentFlowConfig } from '../payment'
 
-/* rough UOB wordmark */
-function UobLogo() {
+/* generic bank wordmark — bank name is dynamic, so no real logo asset */
+function BankWordmark({ name }: { name: string }) {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1.5">
       <div className="flex gap-[2px]">
-        {[0, 1, 2, 3].map((i) => (
-          <span key={i} className="block h-4 w-[3px] -skew-x-12 bg-[#e2231a]" />
+        {[0, 1, 2].map((i) => (
+          <span key={i} className="block h-4 w-[3px] -skew-x-12 bg-[#004a97]" />
         ))}
       </div>
-      <span className="text-[22px] font-bold leading-none">
-        <span className="text-[#e2231a]">U</span>
-        <span className="text-[#004a97]">OB</span>
-      </span>
+      <span className="text-[18px] font-bold leading-none text-[#004a97]">{name}</span>
     </div>
   )
 }
@@ -30,19 +26,33 @@ function Row({ label, value }: { label: string; value: string }) {
   )
 }
 
-export default function BankOtp() {
+export default function EgiroBankAuth() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { setPaid } = usePayment()
+  const { setAddedCard, showCardAdded } = usePayment()
   const [processing, setProcessing] = useState(false)
 
-  const flow = (location.state as { flow?: PaymentFlowConfig } | null)?.flow
+  const st = location.state as {
+    bank?: string
+    name?: string
+    email?: string
+    returnTo?: string
+    reopen?: string
+    flow?: PaymentFlowConfig
+  } | null
+  const bank = st?.bank ?? 'Your Bank'
+  const name = st?.name ?? 'ACCOUNT HOLDER'
+  const email = st?.email ?? 'you@example.com'
+  const returnTo = st?.returnTo ?? '/update-payment'
+  const reopen = st?.reopen
+  const flow = st?.flow
 
-  const pay = () => {
+  const authorize = () => {
     setProcessing(true)
     setTimeout(() => {
-      if (flow?.setPaidOnSuccess !== false) setPaid(true)
-      navigate('/success', { state: { flow } })
+      setAddedCard({ id: 'added-card', brand: 'egiro', last4: '022', status: bank })
+      showCardAdded()
+      navigate(returnTo, { state: { reopenSheet: reopen, flow }, replace: true })
     }, 2100)
   }
 
@@ -85,47 +95,35 @@ export default function BankOtp() {
       {/* bank page */}
       <div className="flex-1 px-4 py-4 text-[14px] leading-5 text-[#1a1a1a]">
         <div className="flex items-center justify-between">
-          <img src={ICON.visa} alt="Visa" className="h-6 w-auto" />
-          <UobLogo />
+          <BankWordmark name={bank} />
+          <span className="text-[11px] font-bold uppercase tracking-wide text-[#666]">
+            eGIRO
+          </span>
         </div>
 
         <p className="mt-4">
-          For added security, an SMS One-time Password (OTP) is required to
-          complete this transaction. Please enter the SMS-OTP which has been sent
-          to your mobile phone (<b>XXXX3056</b>).
+          <b>StarHub Epayment</b> is requesting authorization to set up recurring
+          GIRO deductions from your account at <b>{bank}</b>. Please review the
+          details below before proceeding.
         </p>
 
         <div className="mt-4 border border-[#333] p-3">
           <div className="flex flex-col gap-2">
             <Row label="Merchant" value="STARHUB EPAYMENT" />
-            <Row label="Amount" value="SGD 1.00" />
-            <Row label="Date" value="11/05/2023" />
-            <Row label="Card Number" value="426588******3841" />
-            <div className="flex items-center gap-2">
-              <span className="w-[92px] shrink-0 text-right font-bold">
-                SMS-OTP:
-              </span>
-              <span className="font-bold">MC9O</span>
-              <input
-                value="••••••"
-                readOnly
-                className="min-w-0 flex-1 border border-[#999] px-2 py-1 tracking-widest"
-              />
-            </div>
+            <Row label="Purpose" value="Recurring bill payment" />
+            <Row label="Account holder" value={name.toUpperCase()} />
+            <Row label="Email" value={email} />
           </div>
 
           <div className="mt-3 flex flex-col gap-2">
             <button
-              onClick={pay}
+              onClick={authorize}
               className="rounded-[3px] bg-[#3b7fd4] py-2 text-[14px] font-bold text-white active:opacity-90"
             >
-              Proceed
-            </button>
-            <button className="rounded-[3px] bg-[#3b7fd4] py-2 text-[14px] font-bold text-white active:opacity-90">
-              Get Another SMS-OTP
+              Authorize
             </button>
             <button
-              onClick={() => navigate('/pay')}
+              onClick={() => navigate(-1)}
               className="rounded-[3px] bg-[#3b7fd4] py-2 text-[14px] font-bold text-white active:opacity-90"
             >
               Cancel
@@ -134,25 +132,23 @@ export default function BankOtp() {
         </div>
 
         <p className="mt-4 text-[13px]">
-          If <b>XXXX3056</b> is not your mobile phone number, please complete the{' '}
-          <span className="text-[#2f6fd0] underline">2FA Registration/Update Form</span>{' '}
-          (available on the <span className="text-[#2f6fd0] underline">UOB website</span>)
-          and mail it to us.
+          If you did not initiate this request, do not authorize it and contact{' '}
+          <span className="text-[#2f6fd0] underline">{bank} customer service</span>{' '}
+          immediately.
         </p>
 
         <p className="mt-4 text-[11px] leading-4 text-[#666]">
-          Copyright © 2019 United Overseas Bank Limited Co. Reg. No. 193500026Z.
-          All Rights Reserved.
+          This is a simulated bank authorization page for prototype purposes only.
         </p>
       </div>
 
-      {/* payment gateway processing overlay */}
+      {/* processing overlay */}
       {processing && (
         <SheetPortal>
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-white/95">
             <div className="size-10 animate-spin rounded-full border-[3px] border-[#1a1a1a]/15 border-t-[#3b7fd4]" />
             <p className="text-[15px] font-semibold text-[#1a1a1a]">
-              Processing payment…
+              Linking account…
             </p>
             <p className="text-[13px] text-[#666]">
               Please do not close or refresh this page.

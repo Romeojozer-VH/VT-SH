@@ -53,8 +53,9 @@ export default function CardAddedSheet({
             Payment method successfully added
           </h3>
           <p className="success-rise mt-3 max-w-[300px] text-[16px] leading-6 text-sh-ink/70 [animation-delay:220ms]">
-            Your new {label(brand)} **** {last4} has been successfully added to
-            your account.
+            Your new {label(brand)}{' '}
+            {brand === 'egiro' ? `ending in ${last4}` : `**** ${last4}`} has been
+            successfully added to your account.
           </p>
         </div>
       </div>

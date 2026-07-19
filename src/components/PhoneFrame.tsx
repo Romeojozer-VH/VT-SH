@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { SheetPortalContext } from './sheetPortal'
 
 interface PhoneFrameProps {
   children: ReactNode
@@ -21,17 +22,29 @@ export default function PhoneFrame({
   bottomBar,
   overlay,
 }: PhoneFrameProps) {
+  const screenRef = useRef<HTMLDivElement>(null)
+  const [portalNode, setPortalNode] = useState<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    setPortalNode(screenRef.current)
+  }, [framed])
+
   if (!framed) {
     return (
-      <div className="relative mx-auto h-full w-full max-w-[430px] overflow-hidden bg-white">
-        <div className="h-full w-full overflow-y-auto no-scrollbar">
-          {children}
+      <SheetPortalContext.Provider value={portalNode}>
+        <div
+          ref={screenRef}
+          className="relative mx-auto h-full w-full max-w-[430px] overflow-hidden bg-white"
+        >
+          <div className="h-full w-full overflow-y-auto no-scrollbar">
+            {children}
+          </div>
+          {bottomBar && (
+            <div className="absolute inset-x-0 bottom-0 z-40">{bottomBar}</div>
+          )}
+          {overlay}
         </div>
-        {bottomBar && (
-          <div className="absolute inset-x-0 bottom-0 z-40">{bottomBar}</div>
-        )}
-        {overlay}
-      </div>
+      </SheetPortalContext.Provider>
     )
   }
 
@@ -41,17 +54,22 @@ export default function PhoneFrame({
       style={{ boxShadow: '0 30px 60px rgba(0,0,0,0.35)' }}
     >
       {/* screen */}
-      <div className="relative h-full w-full overflow-hidden rounded-[42px] bg-white">
-        {/* notch — physical part of the device, stays above the sticky status bar */}
-        <div className="pointer-events-none absolute left-1/2 top-2 z-50 h-[26px] w-[110px] -translate-x-1/2 rounded-full bg-black" />
-        <div className="h-full w-full overflow-y-auto no-scrollbar">
-          {children}
+      <SheetPortalContext.Provider value={portalNode}>
+        <div
+          ref={screenRef}
+          className="relative h-full w-full overflow-hidden rounded-[42px] bg-white"
+        >
+          {/* notch — physical part of the device, stays above the sticky status bar */}
+          <div className="pointer-events-none absolute left-1/2 top-2 z-50 h-[26px] w-[110px] -translate-x-1/2 rounded-full bg-black" />
+          <div className="h-full w-full overflow-y-auto no-scrollbar">
+            {children}
+          </div>
+          {bottomBar && (
+            <div className="absolute inset-x-0 bottom-0 z-40">{bottomBar}</div>
+          )}
+          {overlay}
         </div>
-        {bottomBar && (
-          <div className="absolute inset-x-0 bottom-0 z-40">{bottomBar}</div>
-        )}
-        {overlay}
-      </div>
+      </SheetPortalContext.Provider>
       {/* side buttons */}
       <div className="absolute -left-[3px] top-[120px] h-[30px] w-[3px] rounded-l bg-neutral-700" />
       <div className="absolute -left-[3px] top-[170px] h-[52px] w-[3px] rounded-l bg-neutral-700" />

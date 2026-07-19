@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { usePayment } from '../payment'
+import { SheetPortal } from '../components/sheetPortal'
+import { usePayment, type PaymentFlowConfig } from '../payment'
 import type { CardBrand } from '../components/CardLogo'
 
 function HsbcLogo() {
@@ -24,18 +25,22 @@ export default function Gateway() {
   const navigate = useNavigate()
   const location = useLocation()
   const { setAddedCard, showCardAdded } = usePayment()
+  const [processing, setProcessing] = useState(false)
 
   const st = location.state as {
     brand?: CardBrand
     returnTo?: string
     reopen?: string
+    flow?: PaymentFlowConfig
   } | null
   const brand = st?.brand ?? 'visa'
   const returnTo = st?.returnTo ?? '/update-payment'
   const reopen = st?.reopen
+  const flow = st?.flow
 
-  useEffect(() => {
-    const t = setTimeout(() => {
+  const authenticate = () => {
+    setProcessing(true)
+    setTimeout(() => {
       setAddedCard({
         id: 'added-card',
         brand,
@@ -43,10 +48,9 @@ export default function Gateway() {
         status: 'Expires 12/30',
       })
       showCardAdded()
-      navigate(returnTo, { state: { reopenSheet: reopen }, replace: true })
-    }, 2600)
-    return () => clearTimeout(t)
-  }, [brand, returnTo, reopen, navigate, setAddedCard, showCardAdded])
+      navigate(returnTo, { state: { reopenSheet: reopen, flow }, replace: true })
+    }, 2100)
+  }
 
   return (
     <div className="flex min-h-full flex-col bg-[#dbe4f3] px-5 pb-8 pt-4 text-[#2a3f6b]">
@@ -72,25 +76,21 @@ export default function Gateway() {
         Protecting your online payments
       </h1>
       <p className="mx-auto mt-3 max-w-[320px] text-center text-[13px] leading-5">
-        If you're already logged on to the mobile app, please log off and log back
-        on to see the request to approve the payment. Merchant Name :{' '}
+        Please review the card details below and tap Authenticate to securely add
+        this card. Merchant Name :{' '}
         <span className="font-bold">STARHUB</span>
         <br />
-        Amount :<br />
         Card Number : <span className="font-bold">************7228</span> By
         proceeding, you are deemed to have accepted the terms below
       </p>
 
       <div className="mt-7 flex justify-center">
-        <div className="flex items-center gap-2 rounded-full border border-[#2a3f6b]/40 px-5 py-2.5">
-          {[0, 1, 2, 3].map((i) => (
-            <span
-              key={i}
-              className="size-1.5 animate-pulse rounded-full bg-[#2a3f6b]"
-              style={{ animationDelay: `${i * 160}ms` }}
-            />
-          ))}
-        </div>
+        <button
+          onClick={authenticate}
+          className="rounded-[3px] bg-[#1a3f8f] px-8 py-2.5 text-[14px] font-bold text-white active:opacity-90"
+        >
+          Authenticate and add card
+        </button>
       </div>
 
       <div className="mt-auto border-t border-[#2a3f6b]/20 text-[13px]">
@@ -103,6 +103,20 @@ export default function Gateway() {
           <span className="text-[18px]">+</span>
         </div>
       </div>
+
+      {processing && (
+        <SheetPortal>
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-white/95">
+            <div className="size-10 animate-spin rounded-full border-[3px] border-[#1a1a1a]/15 border-t-[#1a3f8f]" />
+            <p className="text-[15px] font-semibold text-[#1a1a1a]">
+              Authenticating…
+            </p>
+            <p className="text-[13px] text-[#666]">
+              Please do not close or refresh this page.
+            </p>
+          </div>
+        </SheetPortal>
+      )}
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AssetIcon, ICON, IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
@@ -70,20 +71,38 @@ function PromoCard({ image, title }: { image: string; title: string }) {
 export default function Home() {
   const navigate = useNavigate()
   const { paid } = usePayment()
+  const rootRef = useRef<HTMLDivElement>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [headerHeight, setHeaderHeight] = useState<number>()
+
+  // Green header extends down behind the moment card, stopping 80px above
+  // the card's bottom edge — measured live since the card's height varies
+  // with content (paid vs. unpaid, text wrapping).
+  useLayoutEffect(() => {
+    const measure = () => {
+      if (!rootRef.current || !cardRef.current) return
+      const rootTop = rootRef.current.getBoundingClientRect().top
+      const cardBottom = cardRef.current.getBoundingClientRect().bottom
+      setHeaderHeight(cardBottom - rootTop - 80)
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [paid])
+
   return (
-    <div className="relative flex min-h-full flex-col bg-[#efefef]">
-      {/* Green header background — solid green + crisp vector "Portal" shape +
-          dark gradient (rebuilt from Figma's lossless parts, node 3694:23308) */}
+    <div ref={rootRef} className="relative flex min-h-full flex-col bg-[#efefef]">
+      {/* Green header background — extends behind the moment card down to
+          80px above the card's bottom edge (see useLayoutEffect above). */}
       <div
         aria-hidden
-        className={`pointer-events-none absolute inset-x-0 top-0 z-0 overflow-hidden rounded-b-[24px] bg-sh-green ${
-          paid ? 'h-[220px]' : 'h-[292px]'
-        }`}
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 overflow-hidden bg-sh-green"
+        style={{ height: headerHeight }}
       >
         <img
-          src={IMG.homePortal}
+          src={IMG.hero}
           alt=""
-          className="absolute left-[-133px] top-[22px] h-[948px] w-[492px] max-w-none"
+          className="absolute inset-0 h-full w-full object-cover object-top"
         />
         {/* Gradient Dark — darkens the status-bar area (Figma node 42:20390) */}
         <div
@@ -101,7 +120,7 @@ export default function Home() {
       <div className="relative z-10">
         <div className="flex items-center justify-between px-5 pb-5 pt-3">
           <h1 className="text-[20px] font-bold leading-6 text-sh-ink">
-            Good morning, Peter
+            Good morning
           </h1>
           <button className="relative flex size-12 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_2px_4px_rgba(20,20,20,0.1)]">
             <AssetIcon src={ICON.bell} size={24} />
@@ -113,29 +132,26 @@ export default function Home() {
       {/* Moment card — overdue state, or a smaller "paid" state after payment */}
       <section className="relative z-10 px-4">
         <div
-          className={`relative flex flex-col gap-4 overflow-hidden rounded-[24px] border-2 border-sh-green-border bg-sh-green ${
-            paid ? 'py-4' : 'pb-[38px] pt-[38px]'
-          }`}
+          ref={cardRef}
+          className="relative flex flex-col gap-4 overflow-hidden rounded-[24px] pb-[38px] pt-[38px]"
           style={{ boxShadow: '0 16px 32px rgba(20,20,20,0.1)' }}
         >
-          {/* White skewed panel — lets green peek at the left/top edges */}
           <img
-            src={IMG.momentCardBg}
+            src={IMG.momentCardLatest}
             alt=""
             aria-hidden
-            className="pointer-events-none absolute right-[19px] top-[-17.56px] z-0 h-[944px] w-[486px] max-w-none"
+            className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-top"
           />
 
           {/* Text block */}
           <div className="relative z-10 flex flex-col gap-1 pl-5 pr-4">
             {paid ? (
               <>
-                <h2 className="text-[20px] font-black leading-7 text-sh-ink">
-                  You&rsquo;re all paid up
+                <h2 className="line-clamp-2 w-full text-[24px] font-black leading-8 text-sh-ink">
+                  Everything is going well on your plan
                 </h2>
-                <p className="max-w-[200px] text-[14px] leading-5 text-sh-ink">
-                  Your <span className="font-bold">$66.44</span> payment has been
-                  received. Thank you!
+                <p className="line-clamp-3 max-w-[170px] text-[16px] leading-6 text-sh-ink">
+                  We will be on a look out in case if anything comes up,
                 </p>
               </>
             ) : (
@@ -156,10 +172,10 @@ export default function Home() {
                   </div>
                 </div>
 
-                <h2 className="text-[24px] font-black leading-8 text-sh-ink">
+                <h2 className="line-clamp-2 w-full text-[24px] font-black leading-8 text-sh-ink">
                   Your payment is overdue
                 </h2>
-                <p className="max-w-[190px] text-[16px] leading-6 text-sh-ink">
+                <p className="line-clamp-3 max-w-[190px] text-[16px] leading-6 text-sh-ink">
                   Pay $66.44 now to avoid service disruption. Late fee applies.
                 </p>
               </>
@@ -183,11 +199,20 @@ export default function Home() {
           )}
 
           {/* Illustration anchored to the bottom edge of the moment card */}
-          <AssetIcon
-            src={ICON.illustration}
-            size={paid ? 112 : 140}
-            className="pointer-events-none absolute bottom-0 right-0 z-20"
-          />
+          {paid ? (
+            <img
+              src="/Illustrations/Isolation.svg"
+              alt=""
+              aria-hidden
+              className="pointer-events-none absolute bottom-0 right-0 z-20 h-[150px] w-auto"
+            />
+          ) : (
+            <AssetIcon
+              src={ICON.illustration}
+              size={140}
+              className="pointer-events-none absolute bottom-0 right-0 z-20"
+            />
+          )}
         </div>
       </section>
 

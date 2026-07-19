@@ -36,6 +36,37 @@ export interface UpdateConfig {
   doneTo?: string
 }
 
+/** Config threaded as router state through the whole Review → CVV →
+    Redirecting → BankOtp → Success payment flow, so the same flow can be
+    reused for contexts other than "pay the overdue mobile bill" (e.g.
+    paying off a cancelled Pay Later plan's balance). Forwarded unchanged
+    at every navigate() call in the chain. Omit to get the default mobile
+    bill behaviour everywhere. */
+export interface PaymentFlowConfig {
+  title?: string
+  /** Which card is preselected on entry. Defaults to the expired Visa
+      (existing "you need to update your card" narrative) — override for
+      flows where the payment should be immediately payable. */
+  defaultCardId?: string
+  receipt?: {
+    eyebrow: string
+    name: string
+    description?: string
+    date: string
+    amount: string
+    statusLabel?: string
+    lineItems?: [string, string][]
+  }
+  /** Whether to flip the global "mobile bill is paid" flag on success.
+      Default true (existing behaviour) — set false for unrelated flows
+      like cancelling a BNPL plan. */
+  setPaidOnSuccess?: boolean
+  successTitle?: string
+  successDescription?: string
+  doneToLabel?: string
+  doneTo?: string
+}
+
 interface PaymentState {
   paid: boolean
   setPaid: (v: boolean) => void
