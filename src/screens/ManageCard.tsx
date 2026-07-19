@@ -26,26 +26,33 @@ const services = [
 ]
 
 function CardVisual({ card }: { card: CardInfo }) {
+  const isEgiro = card.brand === 'egiro'
   return (
     <div className="relative h-[150px] w-[262px] rounded-[16px] border border-sh-line bg-white p-4 shadow-[0_6px_18px_rgba(20,20,20,0.1)]">
       <div className="flex items-start justify-between">
-        <span className="text-[14px] text-sh-ink">Credit card</span>
+        <span className="text-[14px] text-sh-ink">
+          {isEgiro ? 'Bank account' : 'Credit card'}
+        </span>
         <CardLogo brand={card.brand} />
       </div>
       <p className="mt-9 text-[18px] font-bold tracking-[2px]">
         <span className="text-sh-ink/45">**** **** **** </span>
         <span className="text-sh-ink/70">{card.last4}</span>
       </p>
-      <p
-        className={`mt-2 flex items-center gap-1 text-[14px] leading-5 ${
-          card.warn ? 'text-[#9a1a4a]' : 'text-[#727272]'
-        }`}
-      >
-        {card.warn && (
-          <MaskIcon src={ICON.alertTriangle} size={14} className="text-[#9a1a4a]" />
-        )}
-        {card.expires}
-      </p>
+      {isEgiro ? (
+        <p className="mt-2 text-[14px] leading-5 text-[#727272]">{card.expires}</p>
+      ) : (
+        <p
+          className={`mt-2 flex items-center gap-1 text-[14px] leading-5 ${
+            card.warn ? 'text-[#9a1a4a]' : 'text-[#727272]'
+          }`}
+        >
+          {card.warn && (
+            <MaskIcon src={ICON.alertTriangle} size={14} className="text-[#9a1a4a]" />
+          )}
+          {card.expires}
+        </p>
+      )}
     </div>
   )
 }
@@ -64,7 +71,9 @@ export default function ManageCard() {
       connected: true,
     }
 
-  const [sheet, setSheet] = useState<'none' | 'blocked' | 'confirm'>('none')
+  const [sheet, setSheet] = useState<
+    'none' | 'blocked' | 'confirm' | 'egiro-blocked'
+  >('none')
   const [closing, setClosing] = useState(false)
   const closeSheet = () => {
     setClosing(true)
@@ -111,14 +120,22 @@ export default function ManageCard() {
           Its rounded top corners tuck up under the green header. */}
       <div className="relative z-10 mt-3 flex-1 rounded-t-[24px] bg-[#fafafa] px-5 pb-12 pt-6">
         <h1 className="text-[24px] font-bold leading-8 text-sh-ink">
-          Manage card
+          {card.brand === 'egiro' ? 'Manage eGIRO' : 'Manage card'}
         </h1>
         <div className="mt-8 flex justify-center">
           <CardVisual card={card} />
         </div>
 
         <button
-          onClick={() => setSheet(card.connected ? 'blocked' : 'confirm')}
+          onClick={() =>
+            setSheet(
+              card.brand === 'egiro'
+                ? 'egiro-blocked'
+                : card.connected
+                  ? 'blocked'
+                  : 'confirm',
+            )
+          }
           className="mx-auto mt-5 flex items-center gap-1.5 text-[14px] font-black text-sh-ink active:opacity-70"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -134,54 +151,59 @@ export default function ManageCard() {
         </button>
 
         <h2 className="mt-8 text-[20px] font-black text-sh-ink">My services</h2>
-        {card.connected ? (
-          <>
-            <p className="mt-1 text-[16px] leading-6 text-sh-ink/60">
-              All services that are currently linked to this payment method.
+        <p className="mt-1 text-[16px] leading-6 text-sh-ink/60">
+          {card.connected
+            ? 'All services that are currently linked to this payment method.'
+            : 'No services are linked to this card yet.'}
+        </p>
+
+        {card.brand === 'egiro' && (
+          <div className="mt-4 flex items-start gap-2">
+            <AssetIcon src={ICON.info} size={20} className="shrink-0" />
+            <p className="text-[14px] leading-5 text-[#434343]">
+              Please note that eGIRO approval may take some time.
             </p>
-            <div className="mt-4 flex flex-col">
-              {services.map((s, i) => (
-                <div key={i}>
-                  <div className="flex items-start gap-3 py-3">
-                    <AssetIcon src={s.icon} size={32} className="mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-[12px] font-bold leading-[14px] text-sh-green-text">
-                        {s.eyebrow}
-                      </p>
-                      <p className="mt-1 text-[16px] font-bold leading-5 text-sh-ink">
-                        {s.title}
-                      </p>
-                      <p className="mt-0.5 text-[14px] leading-5 text-[#727272]">
-                        Next payment on 28 Jun
-                      </p>
-                    </div>
-                  </div>
-                  {i < services.length - 1 && <div className="h-px bg-sh-line" />}
-                </div>
-              ))}
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="mt-1 text-[16px] leading-6 text-sh-ink/60">
-              No services are linked to this card yet.
-            </p>
-            <button
-              onClick={() => navigate('/payment-by-services')}
-              className="mt-4 flex h-11 w-full items-center justify-center gap-1.5 rounded-full border border-sh-line bg-white text-[14px] font-black text-sh-ink shadow-[0_2px_4px_rgba(20,20,20,0.08)] active:scale-[0.99]"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 5v14M5 12h14"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                />
-              </svg>
-              Add a service
-            </button>
-          </>
+          </div>
         )}
+
+        {card.connected && (
+          <div className="mt-4 flex flex-col">
+            {services.map((s, i) => (
+              <div key={i}>
+                <div className="flex items-start gap-3 py-3">
+                  <AssetIcon src={s.icon} size={32} className="mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[12px] font-bold leading-[14px] text-sh-green-text">
+                      {s.eyebrow}
+                    </p>
+                    <p className="mt-1 text-[16px] font-bold leading-5 text-sh-ink">
+                      {s.title}
+                    </p>
+                    <p className="mt-0.5 text-[14px] leading-5 text-[#727272]">
+                      Next payment on 28 Jun
+                    </p>
+                  </div>
+                </div>
+                {i < services.length - 1 && <div className="h-px bg-sh-line" />}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <button
+          onClick={() => navigate('/payment-by-services', { state: { targetCard: card } })}
+          className="mt-4 flex h-11 w-full items-center justify-center gap-1.5 rounded-full border border-sh-line bg-white text-[14px] font-black text-sh-ink shadow-[0_2px_4px_rgba(20,20,20,0.08)] active:scale-[0.99]"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+            />
+          </svg>
+          Add a service
+        </button>
       </div>
 
       {/* "Can't delete yet" bottom sheet (card still has services) */}
@@ -351,6 +373,74 @@ export default function ManageCard() {
               className="mt-6 h-14 w-full rounded-full bg-sh-green text-[16px] font-black text-sh-ink active:scale-[0.99]"
             >
               Confirm
+            </button>
+          </div>
+        </div>
+        </SheetPortal>
+      )}
+
+      {/* eGIRO can't be removed instantly — requires a removal form */}
+      {sheet === 'egiro-blocked' && (
+        <SheetPortal>
+        <div className="absolute inset-0 z-50 flex flex-col justify-end">
+          <div
+            className={`absolute inset-0 bg-[#141414]/85 ${
+              closing ? 'sheet-scrim-out' : 'sheet-scrim'
+            }`}
+            onClick={closeSheet}
+          />
+          <div
+            className={`relative z-10 rounded-t-[24px] bg-white px-5 pb-8 pt-6 ${
+              closing ? 'sheet-panel-out' : 'sheet-panel'
+            }`}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <h3 className="text-[20px] font-black leading-6 text-sh-ink">
+                You can&rsquo;t remove this account yet
+              </h3>
+              <button
+                onClick={closeSheet}
+                aria-label="Close"
+                className="shrink-0 text-sh-ink"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6 6l12 12M18 6L6 18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mt-6 flex items-center gap-3 rounded-[24px] border border-sh-line p-4">
+              <CardLogo brand="egiro" />
+              <p className="text-[16px] font-bold leading-5 text-sh-ink">
+                {card.expires} accnt ending in {card.last4}
+              </p>
+            </div>
+
+            <h4 className="mt-8 text-[18px] font-black leading-6 text-sh-ink">
+              Please download the eGIRO removal form
+            </h4>
+            <p className="mt-1 text-[15px] leading-5 text-sh-ink/60">
+              Your GIRO payment will still appear as an option, but to remove it,
+              download the GIRO removal form and send it to us. It may take up to 2
+              weeks to process your request once we receive your details.
+            </p>
+
+            <button
+              onClick={closeSheet}
+              className="mt-6 h-14 w-full rounded-full bg-sh-green text-[16px] font-black text-sh-ink active:scale-[0.99]"
+            >
+              Download eGIRO removal form
+            </button>
+            <button
+              onClick={closeSheet}
+              className="mt-4 w-full text-center text-[14px] font-black text-sh-ink"
+            >
+              Cancel
             </button>
           </div>
         </div>

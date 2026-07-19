@@ -59,8 +59,9 @@ export default function PhoneFrame({
           ref={screenRef}
           className="relative h-full w-full overflow-hidden rounded-[42px] bg-white"
         >
-          {/* notch — physical part of the device, stays above the sticky status bar */}
-          <div className="pointer-events-none absolute left-1/2 top-2 z-50 h-[26px] w-[110px] -translate-x-1/2 rounded-full bg-black" />
+          {/* notch — physical hardware cutout, must render above every sheet/overlay
+              in the app (currently the highest is CardAddedSheet at z-[80]) */}
+          <div className="pointer-events-none absolute left-1/2 top-2 z-[100] h-[26px] w-[110px] -translate-x-1/2 rounded-full bg-black" />
           <div className="h-full w-full overflow-y-auto no-scrollbar">
             {children}
           </div>

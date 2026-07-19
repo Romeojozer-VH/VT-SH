@@ -16,6 +16,7 @@ export default function CardUpdated() {
   const location = useLocation()
   const st = location.state as {
     title?: string
+    description?: string
     newCard?: CardInfo
     oldCard?: CardInfo
     doneTo?: string
@@ -50,11 +51,17 @@ export default function CardUpdated() {
           <h1 className="success-rise mt-6 max-w-[320px] text-[24px] font-black leading-8 text-sh-ink [animation-delay:200ms]">
             {title}
           </h1>
-          {showMoved && (
+          {st?.description ? (
             <p className="success-rise mt-3 max-w-[320px] text-[16px] leading-6 text-sh-ink [animation-delay:290ms]">
-              Your service is now moved to {label(newCard.brand)} ****{' '}
-              {newCard.last4} from {label(oldCard.brand)} **** {oldCard.last4}
+              {st.description}
             </p>
+          ) : (
+            showMoved && (
+              <p className="success-rise mt-3 max-w-[320px] text-[16px] leading-6 text-sh-ink [animation-delay:290ms]">
+                Your service is now moved to {label(newCard.brand)} ****{' '}
+                {newCard.last4} from {label(oldCard.brand)} **** {oldCard.last4}
+              </p>
+            )
           )}
         </div>
 

@@ -21,8 +21,20 @@ const methods: Method[] = [
 
 export default function PaymentMethods() {
   const navigate = useNavigate()
-  const { deletedIds } = usePayment()
-  const visible = methods.filter((m) => !deletedIds.includes(m.id))
+  const { deletedIds, addedCard } = usePayment()
+  const allMethods = addedCard
+    ? [
+        ...methods,
+        {
+          id: addedCard.id,
+          brand: addedCard.brand,
+          last4: addedCard.last4,
+          expires: addedCard.status,
+          connected: false,
+        },
+      ]
+    : methods
+  const visible = allMethods.filter((m) => !deletedIds.includes(m.id))
 
   return (
     <div className="relative flex min-h-full flex-col bg-[#fafafa]">
