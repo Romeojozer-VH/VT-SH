@@ -82,9 +82,17 @@ export interface PaymentFlowConfig {
   doneToSteps?: number
 }
 
+/** Which persona's scenario is currently loaded — 'supernova' is the
+    original recurring-card user; 'legacy' pays a manual bill via PayNow
+    on the Pay page even while Home shows the "no overdue" happy state, so
+    this can't just be derived from `paid`. */
+export type UserType = 'supernova' | 'legacy'
+
 interface PaymentState {
   paid: boolean
   setPaid: (v: boolean) => void
+  userType: UserType
+  setUserType: (v: UserType) => void
   deletedIds: string[]
   deleteCard: (id: string) => void
   addedCard: AddedCard | null
@@ -105,6 +113,8 @@ interface PaymentState {
 export const PaymentContext = createContext<PaymentState>({
   paid: false,
   setPaid: () => {},
+  userType: 'supernova',
+  setUserType: () => {},
   deletedIds: [],
   deleteCard: () => {},
   addedCard: null,

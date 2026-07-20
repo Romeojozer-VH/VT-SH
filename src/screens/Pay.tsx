@@ -89,6 +89,43 @@ function PaymentDueCard() {
   )
 }
 
+/* ---------- Legacy user's manual PayNow bill ---------- */
+function LegacyPaymentDueCard() {
+  const navigate = useNavigate()
+  return (
+    <div className="flex flex-col gap-4 rounded-[24px] border border-[#dadbda] bg-white p-4 shadow-[0_2px_4px_rgba(20,20,20,0.1)]">
+      <div className="flex gap-2">
+        <AssetIcon src={ICON.legacyContract} size={32} className="shrink-0" />
+        <div className="flex flex-1 gap-1">
+          <div className="flex flex-1 flex-col gap-0.5">
+            <p className="text-[16px] font-bold leading-5 text-sh-ink">
+              Acc. 1.15655811A
+            </p>
+            <p className="text-[14px] leading-5 text-[#434343]">
+              2 mobiles, 1 TVs, 1 broadband, 1 DV
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-0.5">
+            <p className="whitespace-nowrap text-[16px] font-black leading-5 text-sh-ink">
+              $66.00
+            </p>
+            <p className="whitespace-nowrap text-[12px] font-bold leading-4 text-[#727272]">
+              28 Jul
+            </p>
+          </div>
+        </div>
+      </div>
+      <button
+        onClick={() => navigate('/review')}
+        className="flex w-full items-center justify-center gap-1 rounded-full border border-sh-line bg-white py-2 text-[14px] font-black tracking-[0.15px] text-sh-ink shadow-[0_2px_4px_rgba(20,20,20,0.1)] active:scale-95"
+      >
+        Pay
+        <AssetIcon src={ICON.arrow} size={16} />
+      </button>
+    </div>
+  )
+}
+
 /* ---------- transaction row ---------- */
 interface Txn {
   icon: string
@@ -221,7 +258,7 @@ const moreGroups: typeof groups = [
 
 /* ================= PAY SCREEN ================= */
 export default function Pay() {
-  const { paid } = usePayment()
+  const { paid, userType } = usePayment()
   const [loaded, setLoaded] = useState(false)
   const topRef = useRef<HTMLDivElement>(null)
   const [bannerHeight, setBannerHeight] = useState(280)
@@ -232,11 +269,33 @@ export default function Pay() {
   // background) — measured live since the section's height depends on
   // content, not hardcoded. +2px so it slightly overlaps under the white
   // panel's rounded corner rather than meeting it exactly — otherwise a
-  // hairline gap can show at the seam (e.g. from fit-to-screen's fractional
-  // scale transform), revealing the page background instead of green.
+  // hairline gap can show at the seam, revealing the page background
+  // instead of green.
+  //
+  // offsetHeight, not getBoundingClientRect() — the frame is wrapped in a
+  // CSS transform: scale() when fit-to-screen is active, and
+  // getBoundingClientRect() returns the already-scaled visual size. Feeding
+  // that into a height style here would scale it a second time (the style
+  // itself lives inside the same scaled ancestor), shrinking the banner
+  // well short of the real content whenever scale isn't exactly 1.
+  // offsetHeight reports the element's logical layout size and ignores
+  // ancestor transforms entirely, avoiding the double-scaling.
+  //
+  // Also re-measures once web fonts finish loading and on resize. The Lato
+  // weights load via Google Fonts with display=swap, so the very first
+  // measurement can happen while a fallback font is still showing — its
+  // line-height/metrics differ from Lato's, so the content can grow a few
+  // px once the real font swaps in, leaving the banner short if nothing
+  // re-measures afterward.
   useLayoutEffect(() => {
-    if (!topRef.current) return
-    setBannerHeight(topRef.current.getBoundingClientRect().height + 2)
+    const measure = () => {
+      if (!topRef.current) return
+      setBannerHeight(topRef.current.offsetHeight + 2)
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    document.fonts?.ready.then(measure)
+    return () => window.removeEventListener('resize', measure)
   }, [])
   const latestPayment: typeof groups = paid
     ? [
@@ -323,14 +382,26 @@ export default function Pay() {
           Its rounded top corners tuck up under the green header; the tiles'
           12px bottom padding shows as green below them. */}
       <div className="relative z-10 flex flex-1 flex-col rounded-t-[24px] bg-[#fafafa] px-5 pb-12 pt-6">
-        {/* Payment due — disappears once paid */}
-        {!paid && (
+        {/* Payment due — Legacy users always have a manual bill to pay via
+            PayNow here regardless of the "paid" flag (Home can be in its
+            happy/no-overdue state while this still needs action); SuperNova
+            users only see this section while unpaid. */}
+        {userType === 'legacy' ? (
           <section>
             <p className="mb-2 text-[16px] font-black leading-6 text-sh-ink">
               Payment due
             </p>
-            <PaymentDueCard />
+            <LegacyPaymentDueCard />
           </section>
+        ) : (
+          !paid && (
+            <section>
+              <p className="mb-2 text-[16px] font-black leading-6 text-sh-ink">
+                Payment due
+              </p>
+              <PaymentDueCard />
+            </section>
+          )
         )}
 
         {/* Past payment activity */}

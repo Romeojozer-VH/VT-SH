@@ -17,7 +17,7 @@ import UpdatePaymentMethod from './screens/UpdatePaymentMethod'
 import CardUpdated from './screens/CardUpdated'
 import Gateway from './screens/Gateway'
 import Review from './screens/Review'
-import type { AddedCard, UpdateConfig } from './payment'
+import type { AddedCard, UpdateConfig, UserType } from './payment'
 import Redirecting from './screens/Redirecting'
 import BankOtp from './screens/BankOtp'
 import Success from './screens/Success'
@@ -34,6 +34,7 @@ const FRAME_HEIGHT = 844
 interface Scenario {
   label: string
   paid: boolean
+  userType?: UserType
 }
 interface ScenarioGroup {
   persona: string
@@ -48,6 +49,16 @@ const SCENARIO_GROUPS: ScenarioGroup[] = [
     scenarios: [
       { label: 'Pay Journey - Happy flow (No overdue)', paid: true },
       { label: 'Pay Journey - Unhappy flow (with overdue)', paid: false },
+    ],
+  },
+  {
+    persona: 'Legacy User',
+    scenarios: [
+      {
+        label: 'Pay Journey (Pay by PayNow)',
+        paid: true,
+        userType: 'legacy',
+      },
     ],
   },
 ]
@@ -71,6 +82,7 @@ export default function App() {
   })
   const [scale, setScale] = useState(1)
   const [paid, setPaid] = useState(false)
+  const [userType, setUserType] = useState<UserType>('supernova')
   const [deletedIds, setDeletedIds] = useState<string[]>([])
   const deleteCard = (id: string) =>
     setDeletedIds((p) => (p.includes(id) ? p : [...p, id]))
@@ -142,8 +154,9 @@ export default function App() {
     return () => window.removeEventListener('resize', compute)
   }, [framed, fit])
 
-  const resetPrototype = (paidState = false) => {
+  const resetPrototype = (paidState = false, userTypeState: UserType = 'supernova') => {
     setPaid(paidState)
+    setUserType(userTypeState)
     setDeletedIds([])
     setAddedCard(null)
     setUpdateCtx(null)
@@ -153,7 +166,7 @@ export default function App() {
     navigate('/')
   }
   const loadScenario = (scenario: Scenario) => {
-    resetPrototype(scenario.paid)
+    resetPrototype(scenario.paid, scenario.userType ?? 'supernova')
     setScenarioMenuOpen(false)
     setMobileControlsOpen(false)
   }
@@ -163,6 +176,8 @@ export default function App() {
       value={{
         paid,
         setPaid,
+        userType,
+        setUserType,
         deletedIds,
         deleteCard,
         addedCard,

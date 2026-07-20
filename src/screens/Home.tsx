@@ -90,15 +90,34 @@ export default function Home() {
   // Green header extends down behind the moment card, stopping 80px above
   // the card's bottom edge — measured live since the card's height varies
   // with content (paid vs. unpaid, text wrapping).
+  //
+  // Walks the offsetParent chain instead of using getBoundingClientRect —
+  // the frame is wrapped in a CSS transform: scale() when fit-to-screen is
+  // active, and getBoundingClientRect() returns the already-scaled visual
+  // position. Feeding that into a height style here would scale it a
+  // second time (the style itself lives inside the same scaled ancestor),
+  // shrinking the header well short of the card whenever scale isn't
+  // exactly 1. offsetTop/offsetParent are layout properties and ignore
+  // ancestor transforms entirely, avoiding the double-scaling.
   useLayoutEffect(() => {
     const measure = () => {
-      if (!rootRef.current || !cardRef.current) return
-      const rootTop = rootRef.current.getBoundingClientRect().top
-      const cardBottom = cardRef.current.getBoundingClientRect().bottom
-      setHeaderHeight(cardBottom - rootTop - 80)
+      const root = rootRef.current
+      const card = cardRef.current
+      if (!root || !card) return
+      let cardBottom = card.offsetHeight
+      let node: HTMLElement | null = card
+      while (node && node !== root) {
+        cardBottom += node.offsetTop
+        node = node.offsetParent as HTMLElement | null
+      }
+      setHeaderHeight(cardBottom - 80)
     }
     measure()
     window.addEventListener('resize', measure)
+    // Lato loads via Google Fonts with display=swap — the first measurement
+    // can happen while a fallback font is still showing, so re-measure once
+    // the real font swaps in and any text reflows.
+    document.fonts?.ready.then(measure)
     return () => window.removeEventListener('resize', measure)
   }, [paid])
 
