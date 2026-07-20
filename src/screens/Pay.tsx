@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AssetIcon, ICON, IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
@@ -12,7 +12,6 @@ const tabs = [
     label: 'Payment by services',
     to: '/payment-by-services',
   },
-  { icon: ICON.payLater, label: 'PayLater plans', to: '/paylater-plans' },
 ]
 
 function SocketTab({
@@ -28,11 +27,27 @@ function SocketTab({
   return (
     <button
       onClick={() => to && navigate(to)}
-      className="flex min-h-[96px] flex-1 flex-col justify-between rounded-[16px] border border-[#dadbda] bg-white p-3 text-left shadow-[0_4px_12px_rgba(20,20,20,0.1)]"
+      className="flex h-[86px] flex-1 flex-col justify-end rounded-[24px] border border-[#dadbda] bg-white p-4 text-left shadow-[0_4px_12px_rgba(20,20,20,0.1)]"
     >
       <AssetIcon src={icon} size={32} />
-      <p className="mt-2 text-[14px] font-black leading-[18px] tracking-[0.15px] text-sh-ink">
+      <p className="mt-1 text-[14px] font-black leading-[18px] tracking-[0.15px] text-sh-ink">
         {label}
+      </p>
+    </button>
+  )
+}
+
+/* ---------- wide "PayLater plans" row ---------- */
+function PayLaterRow() {
+  const navigate = useNavigate()
+  return (
+    <button
+      onClick={() => navigate('/paylater-plans')}
+      className="flex w-full items-center gap-3 rounded-[24px] border border-[#dadbda] bg-white p-4 text-left shadow-[0_4px_12px_rgba(20,20,20,0.1)]"
+    >
+      <AssetIcon src={ICON.payLater} size={32} className="shrink-0" />
+      <p className="text-[14px] font-black leading-[18px] tracking-[0.15px] text-sh-ink">
+        PayLater plans
       </p>
     </button>
   )
@@ -208,6 +223,21 @@ const moreGroups: typeof groups = [
 export default function Pay() {
   const { paid } = usePayment()
   const [loaded, setLoaded] = useState(false)
+  const topRef = useRef<HTMLDivElement>(null)
+  const [bannerHeight, setBannerHeight] = useState(280)
+
+  // Green banner extends behind the whole top section (status bar through
+  // the PayLater row, including that row's own 16px bottom padding, which
+  // is how that padding reads as green rather than as the white panel's own
+  // background) — measured live since the section's height depends on
+  // content, not hardcoded. +2px so it slightly overlaps under the white
+  // panel's rounded corner rather than meeting it exactly — otherwise a
+  // hairline gap can show at the seam (e.g. from fit-to-screen's fractional
+  // scale transform), revealing the page background instead of green.
+  useLayoutEffect(() => {
+    if (!topRef.current) return
+    setBannerHeight(topRef.current.getBoundingClientRect().height + 2)
+  }, [])
   const latestPayment: typeof groups = paid
     ? [
         {
@@ -237,10 +267,12 @@ export default function Pay() {
   ]
   return (
     <div className="relative flex min-h-full flex-col bg-[#fafafa]">
-      {/* Green banner background (flat rectangle) */}
+      {/* Green banner background (flat rectangle) — height tracks the
+          measured top section below, see useLayoutEffect above. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[280px] overflow-hidden bg-sh-green"
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 overflow-hidden bg-sh-green"
+        style={{ height: bannerHeight }}
       >
         <img
           src={IMG.homePortal}
@@ -256,20 +288,35 @@ export default function Pay() {
         />
       </div>
 
-      <StatusBar />
+      <div ref={topRef} className="relative z-10">
+        <StatusBar />
 
-      {/* Title */}
-      <div className="relative z-10">
-        <h1 className="px-5 pb-3 pt-[26px] text-[28px] font-black leading-9 text-sh-ink">
+        {/* Title */}
+        <h1 className="px-5 pb-5 pt-[26px] text-[28px] font-black leading-9 tracking-[0px] text-sh-ink">
           My payment
         </h1>
-      </div>
 
-      {/* Category tabs */}
-      <div className="relative z-10 flex gap-2 px-5 pb-3">
-        {tabs.map((t) => (
-          <SocketTab key={t.label} {...t} />
-        ))}
+        {/* Manage my payment */}
+        <h2 className="px-5 text-[16px] font-black leading-9 tracking-[0px] text-sh-ink">
+          Manage my payment
+        </h2>
+
+        {/* Category tabs */}
+        <div className="flex gap-2 px-5 pb-3">
+          {tabs.map((t) => (
+            <SocketTab key={t.label} {...t} />
+          ))}
+        </div>
+
+        {/* My Pay later */}
+        <h2 className="px-5 text-[16px] font-black leading-9 tracking-[0px] text-sh-ink">
+          My Pay later
+        </h2>
+
+        {/* PayLater plans wide row */}
+        <div className="px-5 pb-4">
+          <PayLaterRow />
+        </div>
       </div>
 
       {/* White content panel — 20px sides / 24px top / 48px bottom.

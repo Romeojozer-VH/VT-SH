@@ -16,7 +16,13 @@ const items: NavItem[] = [
   { src: ICON.navAccount, label: 'Account' },
 ]
 
-export default function BottomNav() {
+export default function BottomNav({
+  onAccountTap,
+}: {
+  /** "Account" has no screen of its own yet — on mobile it doubles as the
+      entry point into the presentation-settings modal (see App.tsx). */
+  onAccountTap?: () => void
+}) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
 
@@ -27,7 +33,11 @@ export default function BottomNav() {
         return (
           <button
             key={item.label}
-            onClick={() => item.path && navigate(item.path)}
+            onClick={() =>
+              item.path
+                ? navigate(item.path)
+                : item.label === 'Account' && onAccountTap?.()
+            }
             className={`flex flex-1 flex-col items-center gap-1 ${
               active ? 'text-sh-ink' : 'text-sh-ink/50'
             }`}
