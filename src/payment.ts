@@ -34,6 +34,14 @@ export interface UpdateConfig {
   options?: UpdateOption[]
   back?: string
   doneTo?: string
+  /** How many real history entries CardUpdated's "Done" button should pop
+      back through to reach doneTo, since this screen is always reached via
+      a chain of real pushes (never a fixed-path replace, which would leave
+      a duplicate of doneTo's own entry behind for its back button to snag
+      on). Depth varies by caller: PaymentByServices → UpdatePaymentMethod →
+      CardUpdated is 2; PaymentMethods → ManageCard → UpdatePaymentMethod →
+      CardUpdated is 3. */
+  doneToSteps?: number
 }
 
 /** Config threaded as router state through the whole Review → CVV →
@@ -65,6 +73,13 @@ export interface PaymentFlowConfig {
   successDescription?: string
   doneToLabel?: string
   doneTo?: string
+  /** How many real history entries Success's "Done" button should pop back
+      through to reach doneTo. Omit for the default mobile-bill flow, whose
+      origin (Home vs. the Pay tab) isn't knowable from this config alone —
+      set it for flows with one deterministic entry point, like cancelling a
+      BNPL plan, where pushing forward to doneTo would otherwise duplicate
+      an ancestor entry already in history. */
+  doneToSteps?: number
 }
 
 interface PaymentState {
@@ -78,6 +93,13 @@ interface PaymentState {
   cardAddedOpen: boolean
   updateCtx: UpdateConfig | null
   setUpdateCtx: (c: UpdateConfig | null) => void
+  /** Which sheet the screen we're popping back to should reopen, set right
+      before a gateway/bank-auth sub-flow navigates away and consumed (then
+      cleared) by that screen on return. Carried via context rather than
+      router state so the return trip can be a plain navigate(-N) — a real
+      history pop, not a replace that leaves a duplicate entry behind. */
+  pendingReopenSheet: string | null
+  setPendingReopenSheet: (v: string | null) => void
 }
 
 export const PaymentContext = createContext<PaymentState>({
@@ -91,6 +113,8 @@ export const PaymentContext = createContext<PaymentState>({
   cardAddedOpen: false,
   updateCtx: null,
   setUpdateCtx: () => {},
+  pendingReopenSheet: null,
+  setPendingReopenSheet: () => {},
 })
 
 export const usePayment = () => useContext(PaymentContext)

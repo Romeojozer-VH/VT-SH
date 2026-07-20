@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { SheetPortal } from '../components/sheetPortal'
-import { usePayment, type PaymentFlowConfig } from '../payment'
+import { usePayment } from '../payment'
 
 /* generic bank wordmark — bank name is dynamic, so no real logo asset */
 function BankWordmark({ name }: { name: string }) {
@@ -29,30 +29,30 @@ function Row({ label, value }: { label: string; value: string }) {
 export default function EgiroBankAuth() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { setAddedCard, showCardAdded } = usePayment()
+  const { setAddedCard, showCardAdded, setPendingReopenSheet } = usePayment()
   const [processing, setProcessing] = useState(false)
 
   const st = location.state as {
     bank?: string
     name?: string
     email?: string
-    returnTo?: string
     reopen?: string
-    flow?: PaymentFlowConfig
   } | null
   const bank = st?.bank ?? 'Your Bank'
   const name = st?.name ?? 'ACCOUNT HOLDER'
   const email = st?.email ?? 'you@example.com'
-  const returnTo = st?.returnTo ?? '/update-payment'
   const reopen = st?.reopen
-  const flow = st?.flow
 
   const authorize = () => {
     setProcessing(true)
     setTimeout(() => {
       setAddedCard({ id: 'added-card', brand: 'egiro', last4: '022', status: bank })
       showCardAdded()
-      navigate(returnTo, { state: { reopenSheet: reopen, flow }, replace: true })
+      if (reopen) setPendingReopenSheet(reopen)
+      // Two real pushes deep (AddEgiroAccount, then Redirecting collapsed
+      // into this screen) — pop both to land back on the original caller
+      // with no duplicate entry, skipping the form since it succeeded.
+      navigate(-2)
     }, 2100)
   }
 

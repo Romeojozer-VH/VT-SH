@@ -11,11 +11,18 @@ export default function Success() {
 
   const flow = (location.state as { flow?: PaymentFlowConfig } | null)?.flow
   const doneTo = flow?.doneTo ?? '/pay'
+  const doneToSteps = flow?.doneToSteps
   const doneToLabel = flow?.doneToLabel ?? 'Back to pay dashboard'
 
   const goToDashboard = () => {
     setLeaving(true)
-    setTimeout(() => navigate(doneTo), 300)
+    // A real history pop (when the flow tells us how deep), not a push to a
+    // fixed path — pushing here can leave a duplicate of doneTo's own entry
+    // behind for its back button to snag on.
+    setTimeout(
+      () => (doneToSteps ? navigate(-doneToSteps) : navigate(doneTo)),
+      300,
+    )
   }
 
   return (

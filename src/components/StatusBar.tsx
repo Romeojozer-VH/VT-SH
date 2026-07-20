@@ -1,12 +1,27 @@
-import { useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
+import { StatusBarHiddenContext } from '../statusBarContext'
 
 /* iOS status bar — pinned to the top of the phone screen. Transparent while
    at rest (the green banner shows through); once scrolled, a subtle top-down
    gradient scrim fades in so the glyphs stay legible over whatever content
    scrolls beneath. */
+function formatTime(d: Date) {
+  let h = d.getHours() % 12
+  if (h === 0) h = 12
+  const m = d.getMinutes().toString().padStart(2, '0')
+  return `${h}:${m}`
+}
+
 export default function StatusBar() {
+  const hidden = useContext(StatusBarHiddenContext)
   const ref = useRef<HTMLDivElement>(null)
   const [scrolled, setScrolled] = useState(false)
+  const [now, setNow] = useState(() => new Date())
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 15000)
+    return () => window.clearInterval(id)
+  }, [])
 
   useEffect(() => {
     // Walk up to the nearest scrollable ancestor (PhoneFrame's scroll area).
@@ -23,7 +38,9 @@ export default function StatusBar() {
   return (
     <div
       ref={ref}
-      className="sticky top-0 z-40 flex items-center justify-between px-6 pb-1 pt-3 text-sh-ink transition-opacity duration-200"
+      className={`sticky top-0 z-40 flex items-center justify-between px-6 pb-1 pt-3 text-sh-ink transition-opacity duration-200 ${
+        hidden ? 'opacity-0' : ''
+      }`}
       style={
         scrolled
           ? {
@@ -33,7 +50,7 @@ export default function StatusBar() {
           : undefined
       }
     >
-      <span className="text-[15px] font-bold tracking-tight">9:41</span>
+      <span className="text-[15px] font-bold tracking-tight">{formatTime(now)}</span>
       <div className="flex items-center gap-1.5">
         {/* signal */}
         <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor">

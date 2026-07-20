@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AssetIcon, ICON, IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
@@ -67,6 +67,12 @@ function PromoCard({ image, title }: { image: string; title: string }) {
   )
 }
 
+function greeting(hour: number) {
+  if (hour < 12) return 'Good morning'
+  if (hour < 18) return 'Good afternoon'
+  return 'Good night'
+}
+
 /* ================= HOME SCREEN ================= */
 export default function Home() {
   const navigate = useNavigate()
@@ -74,6 +80,12 @@ export default function Home() {
   const rootRef = useRef<HTMLDivElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
   const [headerHeight, setHeaderHeight] = useState<number>()
+  const [hour, setHour] = useState(() => new Date().getHours())
+
+  useEffect(() => {
+    const id = window.setInterval(() => setHour(new Date().getHours()), 60000)
+    return () => window.clearInterval(id)
+  }, [])
 
   // Green header extends down behind the moment card, stopping 80px above
   // the card's bottom edge — measured live since the card's height varies
@@ -120,7 +132,7 @@ export default function Home() {
       <div className="relative z-10">
         <div className="flex items-center justify-between px-5 pb-5 pt-3">
           <h1 className="text-[20px] font-bold leading-6 text-sh-ink">
-            Good morning
+            {greeting(hour)}
           </h1>
           <button className="relative flex size-12 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_2px_4px_rgba(20,20,20,0.1)]">
             <AssetIcon src={ICON.bell} size={24} />

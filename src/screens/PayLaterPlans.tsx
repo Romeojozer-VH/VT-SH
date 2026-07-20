@@ -118,7 +118,7 @@ export default function PayLaterPlans() {
       {/* Back button (title lives on the white content panel, not the green header) */}
       <div className="relative z-10 px-5 pt-[18px]">
         <button
-          onClick={() => navigate('/pay')}
+          onClick={() => navigate(-1)}
           className="flex size-10 items-center justify-center rounded-full bg-white shadow-[0_2px_4px_rgba(20,20,20,0.1)] active:scale-95"
         >
           <AssetIcon src={ICON.arrow} size={22} className="rotate-180" />

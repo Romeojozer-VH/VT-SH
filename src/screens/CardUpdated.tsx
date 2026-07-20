@@ -20,9 +20,16 @@ export default function CardUpdated() {
     newCard?: CardInfo
     oldCard?: CardInfo
     doneTo?: string
+    doneToSteps?: number
   } | null
   const title = st?.title ?? "You're all set"
   const doneTo = st?.doneTo ?? '/payment-methods'
+  const doneToSteps = st?.doneToSteps
+  // A real history pop (when the caller tells us how deep), not a push to a
+  // fixed path — this screen is always reached via a chain of real pushes,
+  // so pushing forward to doneTo would leave a duplicate of that same
+  // screen's entry behind, which its own back button would then snag on.
+  const goDone = () => (doneToSteps ? navigate(-doneToSteps) : navigate(doneTo))
   const showMoved = !!(st?.newCard && st?.oldCard)
   const newCard = st?.newCard ?? { brand: 'visa', last4: '1234' }
   const oldCard = st?.oldCard ?? { brand: 'amex', last4: '8824' }
@@ -66,7 +73,7 @@ export default function CardUpdated() {
         </div>
 
         <button
-          onClick={() => navigate(doneTo)}
+          onClick={goDone}
           className="h-14 w-full rounded-full bg-sh-green text-[16px] font-black text-sh-ink shadow-[0_8px_24px_rgba(20,20,20,0.12)] active:scale-[0.99]"
         >
           Done

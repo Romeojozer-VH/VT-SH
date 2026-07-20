@@ -150,3 +150,28 @@ body {
   animation: page-fade 0.3s ease-in-out;
 }
 
+/* Push/pop screen transition — child screens slide in from the right over
+   their parent; going back reverses it, sliding the child back out. */
+@keyframes screen-push-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes screen-pop-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+.screen-push-in {
+  animation: screen-push-in 0.3s ease-out both;
+}
+.screen-pop-out {
+  animation: screen-pop-out 0.3s ease-out both;
+}
+

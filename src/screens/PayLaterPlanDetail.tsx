@@ -22,6 +22,7 @@ const CANCEL_PLAN_FLOW: PaymentFlowConfig = {
     'Your Pay later plan has been cancelled and the remaining balance has been paid.',
   doneToLabel: 'Back to Pay later plans',
   doneTo: '/paylater-plans',
+  doneToSteps: 4,
 }
 
 /* dashed tear-line (side notches are cut from the receipt via a mask) */
@@ -205,7 +206,7 @@ export default function PayLaterPlanDetail() {
       {/* Back button */}
       <div className="relative z-10 px-5 pt-[18px]">
         <button
-          onClick={() => navigate('/paylater-plans')}
+          onClick={() => navigate(-1)}
           className="flex size-10 items-center justify-center rounded-full bg-white shadow-[0_2px_4px_rgba(20,20,20,0.1)] active:scale-95"
         >
           <AssetIcon src={ICON.arrow} size={22} className="rotate-180" />

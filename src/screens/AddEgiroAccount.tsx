@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { AssetIcon, ICON, IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
-import type { PaymentFlowConfig } from '../payment'
 
 const SG_BANKS = [
   'DBS/POSB',
@@ -41,14 +40,8 @@ export default function AddEgiroAccount() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const st = location.state as {
-    returnTo?: string
-    reopen?: string
-    flow?: PaymentFlowConfig
-  } | null
-  const returnTo = st?.returnTo ?? '/update-payment'
+  const st = location.state as { reopen?: string } | null
   const reopen = st?.reopen
-  const flow = st?.flow
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -59,7 +52,7 @@ export default function AddEgiroAccount() {
 
   const save = () => {
     navigate('/redirecting', {
-      state: { next: '/egiro-bank-auth', bank, name, email, returnTo, reopen, flow },
+      state: { next: '/egiro-bank-auth', bank, name, email, reopen },
     })
   }
 

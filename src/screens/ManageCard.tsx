@@ -109,7 +109,7 @@ export default function ManageCard() {
       {/* Back button (title lives on the white content panel, not the green header) */}
       <div className="relative z-10 px-5 pt-[18px]">
         <button
-          onClick={() => navigate('/payment-methods')}
+          onClick={() => navigate(-1)}
           className="flex size-10 items-center justify-center rounded-full bg-white shadow-[0_2px_4px_rgba(20,20,20,0.1)] active:scale-95"
         >
           <AssetIcon src={ICON.arrow} size={22} className="rotate-180" />
@@ -296,7 +296,7 @@ export default function ManageCard() {
 
             <button
               onClick={() => {
-                setUpdateCtx({ current: card })
+                setUpdateCtx({ current: card, doneToSteps: 3 })
                 navigate('/update-payment')
               }}
               className="mt-12 h-14 w-full rounded-full bg-sh-green text-[16px] font-black text-sh-ink active:scale-[0.99]"
@@ -367,6 +367,7 @@ export default function ManageCard() {
                   state: {
                     title: 'Payment method successfully removed',
                     doneTo: '/payment-methods',
+                    doneToSteps: 2,
                   },
                 })
               }}

@@ -72,8 +72,8 @@ export default function UpdatePaymentMethod() {
   const services = cfg.services ?? DEFAULT_SERVICES
   const current = cfg.current ?? DEFAULT_CURRENT
   const options = cfg.options ?? DEFAULT_OPTIONS
-  const back = cfg.back ?? '/manage-card'
   const doneTo = cfg.doneTo ?? '/payment-methods'
+  const doneToSteps = cfg.doneToSteps ?? 2
 
   const allCards = addedCard ? [addedCard, ...options] : options
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -110,6 +110,7 @@ export default function UpdatePaymentMethod() {
         newCard: { brand: selected.brand, last4: selected.last4 },
         oldCard: { brand: current.brand, last4: current.last4 },
         doneTo,
+        doneToSteps,
       },
     })
   }
@@ -140,7 +141,7 @@ export default function UpdatePaymentMethod() {
       {/* Back button (title lives on the white content panel, not the green header) */}
       <div className="relative z-10 shrink-0 px-5 pt-[18px]">
         <button
-          onClick={() => navigate(back)}
+          onClick={() => navigate(-1)}
           className="flex size-10 items-center justify-center rounded-full bg-white shadow-[0_2px_4px_rgba(20,20,20,0.1)] active:scale-95"
         >
           <AssetIcon src={ICON.arrow} size={22} className="rotate-180" />

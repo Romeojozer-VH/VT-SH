@@ -418,7 +418,8 @@ function CvvSheet({
 export default function Review() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { addedCard, cardAddedOpen } = usePayment()
+  const { addedCard, cardAddedOpen, pendingReopenSheet, setPendingReopenSheet } =
+    usePayment()
 
   // captured once at mount so it survives the "add payment method" gateway
   // round trip, which remounts this screen with different location.state
@@ -442,10 +443,10 @@ export default function Review() {
   // success sheet to close first instead of stacking underneath it.
   useEffect(() => {
     if (cardAddedOpen) return
-    const reopen = (location.state as { reopenSheet?: string } | null)?.reopenSheet
-    if (reopen === 'payment') {
+    if (pendingReopenSheet === 'payment') {
       setSheet('payment')
       if (addedCard) setDraftId(addedCard.id)
+      setPendingReopenSheet(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cardAddedOpen])

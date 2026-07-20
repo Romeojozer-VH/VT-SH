@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { SheetPortal } from '../components/sheetPortal'
-import { usePayment, type PaymentFlowConfig } from '../payment'
+import { usePayment } from '../payment'
 import type { CardBrand } from '../components/CardLogo'
 
 function HsbcLogo() {
@@ -24,19 +24,24 @@ function HsbcLogo() {
 export default function Gateway() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { setAddedCard, showCardAdded } = usePayment()
+  const { setAddedCard, showCardAdded, setPendingReopenSheet } = usePayment()
   const [processing, setProcessing] = useState(false)
 
   const st = location.state as {
     brand?: CardBrand
-    returnTo?: string
     reopen?: string
-    flow?: PaymentFlowConfig
   } | null
   const brand = st?.brand ?? 'visa'
-  const returnTo = st?.returnTo ?? '/update-payment'
   const reopen = st?.reopen
-  const flow = st?.flow
+
+  // A real history pop, not a replace to a fixed path — Redirecting already
+  // collapsed itself into this entry, so -1 lands exactly back on the
+  // screen that opened the "add payment" sheet, with no duplicate entry
+  // left behind for its own back button to snag on.
+  const returnToCaller = () => {
+    if (reopen) setPendingReopenSheet(reopen)
+    navigate(-1)
+  }
 
   const authenticate = () => {
     setProcessing(true)
@@ -48,7 +53,7 @@ export default function Gateway() {
         status: 'Expires 12/30',
       })
       showCardAdded()
-      navigate(returnTo, { state: { reopenSheet: reopen, flow }, replace: true })
+      returnToCaller()
     }, 2100)
   }
 
@@ -56,9 +61,7 @@ export default function Gateway() {
     <div className="flex min-h-full flex-col bg-[#dbe4f3] px-5 pb-8 pt-4 text-[#2a3f6b]">
       <div className="flex justify-end">
         <button
-          onClick={() =>
-            navigate(returnTo, { state: { reopenSheet: reopen }, replace: true })
-          }
+          onClick={returnToCaller}
           className="text-[13px] font-bold uppercase tracking-wide underline"
         >
           Cancel
