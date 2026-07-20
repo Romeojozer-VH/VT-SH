@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AssetIcon, ICON, IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
@@ -260,43 +260,6 @@ const moreGroups: typeof groups = [
 export default function Pay() {
   const { paid, userType } = usePayment()
   const [loaded, setLoaded] = useState(false)
-  const topRef = useRef<HTMLDivElement>(null)
-  const [bannerHeight, setBannerHeight] = useState(280)
-
-  // Green banner extends behind the whole top section (status bar through
-  // the PayLater row, including that row's own 16px bottom padding, which
-  // is how that padding reads as green rather than as the white panel's own
-  // background) — measured live since the section's height depends on
-  // content, not hardcoded. +2px so it slightly overlaps under the white
-  // panel's rounded corner rather than meeting it exactly — otherwise a
-  // hairline gap can show at the seam, revealing the page background
-  // instead of green.
-  //
-  // offsetHeight, not getBoundingClientRect() — the frame is wrapped in a
-  // CSS transform: scale() when fit-to-screen is active, and
-  // getBoundingClientRect() returns the already-scaled visual size. Feeding
-  // that into a height style here would scale it a second time (the style
-  // itself lives inside the same scaled ancestor), shrinking the banner
-  // well short of the real content whenever scale isn't exactly 1.
-  // offsetHeight reports the element's logical layout size and ignores
-  // ancestor transforms entirely, avoiding the double-scaling.
-  //
-  // Also re-measures once web fonts finish loading and on resize. The Lato
-  // weights load via Google Fonts with display=swap, so the very first
-  // measurement can happen while a fallback font is still showing — its
-  // line-height/metrics differ from Lato's, so the content can grow a few
-  // px once the real font swaps in, leaving the banner short if nothing
-  // re-measures afterward.
-  useLayoutEffect(() => {
-    const measure = () => {
-      if (!topRef.current) return
-      setBannerHeight(topRef.current.offsetHeight + 2)
-    }
-    measure()
-    window.addEventListener('resize', measure)
-    document.fonts?.ready.then(measure)
-    return () => window.removeEventListener('resize', measure)
-  }, [])
   const latestPayment: typeof groups = paid
     ? [
         {
@@ -326,28 +289,31 @@ export default function Pay() {
   ]
   return (
     <div className="relative flex min-h-full flex-col bg-[#fafafa]">
-      {/* Green banner background (flat rectangle) — height tracks the
-          measured top section below, see useLayoutEffect above. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 overflow-hidden bg-sh-green"
-        style={{ height: bannerHeight }}
-      >
+      {/* Green banner — wraps the top section directly (status bar through
+          the PayLater row) instead of being a separately-sized overlay, so
+          its height is just the section's natural layout height: no JS
+          measurement, so no possible mismatch from scale transforms, font
+          load timing, or content changes. The PayLater row's own 16px
+          bottom padding is inside this wrapper too, which is how that
+          padding reads as green rather than as the white panel's own
+          background. */}
+      <div className="relative overflow-hidden bg-sh-green">
         <img
+          aria-hidden
           src={IMG.homePortal}
           alt=""
-          className="absolute left-[-133px] top-[22px] h-[948px] w-[492px] max-w-none"
+          className="pointer-events-none absolute left-[-133px] top-[22px] z-0 h-[948px] w-[492px] max-w-none"
         />
         <div
-          className="absolute inset-x-0 top-0 h-[60px]"
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[60px]"
           style={{
             background:
               'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(102,102,102,0) 78.369%)',
           }}
         />
-      </div>
 
-      <div ref={topRef} className="relative z-10">
+        <div className="relative z-10">
         <StatusBar />
 
         {/* Title */}
@@ -376,11 +342,13 @@ export default function Pay() {
         <div className="px-5 pb-4">
           <PayLaterRow />
         </div>
+        </div>
       </div>
 
       {/* White content panel — 20px sides / 24px top / 48px bottom.
-          Its rounded top corners tuck up under the green header; the tiles'
-          12px bottom padding shows as green below them. */}
+          Its rounded top corners tuck up right against the green wrapper
+          above, guaranteed adjacent since both are plain normal-flow
+          siblings. */}
       <div className="relative z-10 flex flex-1 flex-col rounded-t-[24px] bg-[#fafafa] px-5 pb-12 pt-6">
         {/* Payment due — Legacy users always have a manual bill to pay via
             PayNow here regardless of the "paid" flag (Home can be in its
