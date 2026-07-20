@@ -25,6 +25,8 @@ import PayLaterPlans from './screens/PayLaterPlans'
 import PayLaterPlanDetail from './screens/PayLaterPlanDetail'
 import AddEgiroAccount from './screens/AddEgiroAccount'
 import EgiroBankAuth from './screens/EgiroBankAuth'
+import LegacyBill from './screens/LegacyBill'
+import LegacyPayNow from './screens/LegacyPayNow'
 
 const STORAGE_KEY = 'sh-phone-framed'
 const FIT_KEY = 'sh-phone-fit'
@@ -83,6 +85,7 @@ export default function App() {
   const [scale, setScale] = useState(1)
   const [paid, setPaid] = useState(false)
   const [userType, setUserType] = useState<UserType>('supernova')
+  const [legacyBillPaid, setLegacyBillPaid] = useState(false)
   const [deletedIds, setDeletedIds] = useState<string[]>([])
   const deleteCard = (id: string) =>
     setDeletedIds((p) => (p.includes(id) ? p : [...p, id]))
@@ -157,6 +160,7 @@ export default function App() {
   const resetPrototype = (paidState = false, userTypeState: UserType = 'supernova') => {
     setPaid(paidState)
     setUserType(userTypeState)
+    setLegacyBillPaid(false)
     setDeletedIds([])
     setAddedCard(null)
     setUpdateCtx(null)
@@ -178,6 +182,8 @@ export default function App() {
         setPaid,
         userType,
         setUserType,
+        legacyBillPaid,
+        setLegacyBillPaid,
         deletedIds,
         deleteCard,
         addedCard,
@@ -374,6 +380,8 @@ export default function App() {
                 <Route path="/paylater-plan-detail" element={<PayLaterPlanDetail />} />
                 <Route path="/add-egiro" element={<AddEgiroAccount />} />
                 <Route path="/egiro-bank-auth" element={<EgiroBankAuth />} />
+                <Route path="/legacy-bill" element={<LegacyBill />} />
+                <Route path="/legacy-paynow" element={<LegacyPayNow />} />
               </PageTransition>
             </PhoneFrame>
           )

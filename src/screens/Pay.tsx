@@ -116,7 +116,7 @@ function LegacyPaymentDueCard() {
         </div>
       </div>
       <button
-        onClick={() => navigate('/review')}
+        onClick={() => navigate('/legacy-bill')}
         className="flex w-full items-center justify-center gap-1 rounded-full border border-sh-line bg-white py-2 text-[14px] font-black tracking-[0.15px] text-sh-ink shadow-[0_2px_4px_rgba(20,20,20,0.1)] active:scale-95"
       >
         Pay
@@ -258,32 +258,59 @@ const moreGroups: typeof groups = [
 
 /* ================= PAY SCREEN ================= */
 export default function Pay() {
-  const { paid, userType } = usePayment()
+  const { paid, userType, legacyBillPaid } = usePayment()
   const [loaded, setLoaded] = useState(false)
-  const latestPayment: typeof groups = paid
-    ? [
-        {
-          month: 'Jul 2026',
-          days: [
-            {
-              date: '5 Jul',
-              txns: [
-                {
-                  icon: ICON.mobileSim,
-                  eyebrow: 'Mobile',
-                  title: '9111 2222',
-                  desc: '5G+ Unlimited Core',
-                  card: true,
-                  amount: '-$66.44',
-                },
-              ],
-            },
-          ],
-        },
-      ]
-    : []
+  // Legacy has a manual PayNow bill to show here regardless of "paid"
+  // (Home can be happy/no-overdue while this still needs action) — it
+  // disappears once legacyBillPaid flips true instead.
+  const showPaymentDue = userType === 'legacy' ? !legacyBillPaid : !paid
+  const latestPayment: typeof groups =
+    userType === 'supernova' && paid
+      ? [
+          {
+            month: 'Jul 2026',
+            days: [
+              {
+                date: '5 Jul',
+                txns: [
+                  {
+                    icon: ICON.mobileSim,
+                    eyebrow: 'Mobile',
+                    title: '9111 2222',
+                    desc: '5G+ Unlimited Core',
+                    card: true,
+                    amount: '-$66.44',
+                  },
+                ],
+              },
+            ],
+          },
+        ]
+      : []
+  const legacyPayment: typeof groups =
+    userType === 'legacy' && legacyBillPaid
+      ? [
+          {
+            month: 'Jul 2026',
+            days: [
+              {
+                date: '5 Jul',
+                txns: [
+                  {
+                    icon: ICON.legacyContract,
+                    title: 'Acc. 1.15655811A',
+                    desc: '2 mobiles, 1 TVs, 1 broadband, 1 DV',
+                    amount: '-$66.00',
+                  },
+                ],
+              },
+            ],
+          },
+        ]
+      : []
   const allGroups = [
     ...latestPayment,
+    ...legacyPayment,
     ...groups,
     ...(loaded ? moreGroups : []),
   ]
@@ -313,7 +340,11 @@ export default function Pay() {
           }}
         />
 
-        <div className="relative z-10">
+        {/* pb-6 (+24px) — extra trailing green space equal to the white
+            panel's overlap below, so the PayLater row's own 16px gap still
+            reads as visible green once the panel's flat top edge covers
+            the overlap zone, rather than being swallowed entirely. */}
+        <div className="relative z-10 pb-6">
         <StatusBar />
 
         {/* Title */}
@@ -321,22 +352,12 @@ export default function Pay() {
           My payment
         </h1>
 
-        {/* Manage my payment */}
-        <h2 className="px-5 text-[16px] font-black leading-9 tracking-[0px] text-sh-ink">
-          Manage my payment
-        </h2>
-
         {/* Category tabs */}
         <div className="flex gap-2 px-5 pb-3">
           {tabs.map((t) => (
             <SocketTab key={t.label} {...t} />
           ))}
         </div>
-
-        {/* My Pay later */}
-        <h2 className="px-5 text-[16px] font-black leading-9 tracking-[0px] text-sh-ink">
-          My Pay later
-        </h2>
 
         {/* PayLater plans wide row */}
         <div className="px-5 pb-4">
@@ -346,37 +367,42 @@ export default function Pay() {
       </div>
 
       {/* White content panel — 20px sides / 24px top / 48px bottom.
-          Its rounded top corners tuck up right against the green wrapper
-          above, guaranteed adjacent since both are plain normal-flow
-          siblings. */}
-      <div className="relative z-10 flex flex-1 flex-col rounded-t-[24px] bg-[#fafafa] px-5 pb-12 pt-6">
+          -mt-6 (-24px) pulls this panel's own box up to physically overlap
+          the green wrapper above by exactly the corner radius: a rounded
+          corner only reveals a different backdrop color behind it if that
+          color's box actually extends past the corner, not just touches
+          it — plain adjacency leaves the corner's cutout showing the page
+          background instead of green. pt-6 (+24px) cancels the shift back
+          out for the actual content, so "Payment due" etc. sit at the same
+          position as before; only the panel's own rounded edge moves up
+          into the green. */}
+      <div className="relative z-10 -mt-6 flex flex-1 flex-col rounded-t-[24px] bg-[#fafafa] px-5 pb-12 pt-6">
         {/* Payment due — Legacy users always have a manual bill to pay via
             PayNow here regardless of the "paid" flag (Home can be in its
             happy/no-overdue state while this still needs action); SuperNova
             users only see this section while unpaid. */}
-        {userType === 'legacy' ? (
-          <section>
-            <p className="mb-2 text-[16px] font-black leading-6 text-sh-ink">
-              Payment due
-            </p>
-            <LegacyPaymentDueCard />
-          </section>
-        ) : (
-          !paid && (
+        {showPaymentDue &&
+          (userType === 'legacy' ? (
+            <section>
+              <p className="mb-2 text-[16px] font-black leading-6 text-sh-ink">
+                Payment due
+              </p>
+              <LegacyPaymentDueCard />
+            </section>
+          ) : (
             <section>
               <p className="mb-2 text-[16px] font-black leading-6 text-sh-ink">
                 Payment due
               </p>
               <PaymentDueCard />
             </section>
-          )
-        )}
+          ))}
 
         {/* Past payment activity */}
         <section>
           <h2
             className={`pb-4 text-[16px] font-black leading-5 text-sh-ink ${
-              paid ? 'pt-0' : 'pt-6'
+              showPaymentDue ? 'pt-6' : 'pt-0'
             }`}
           >
             Past payment activity

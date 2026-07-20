@@ -69,6 +69,11 @@ export interface PaymentFlowConfig {
       Default true (existing behaviour) — set false for unrelated flows
       like cancelling a BNPL plan. */
   setPaidOnSuccess?: boolean
+  /** Whether to mark the Legacy user's manual bill as paid on success —
+      independent of setPaidOnSuccess/the "paid" flag, since Home can
+      already be in its happy/no-overdue state while this bill is still
+      outstanding. */
+  setLegacyBillPaidOnSuccess?: boolean
   successTitle?: string
   successDescription?: string
   doneToLabel?: string
@@ -93,6 +98,11 @@ interface PaymentState {
   setPaid: (v: boolean) => void
   userType: UserType
   setUserType: (v: UserType) => void
+  /** Whether the Legacy user's manual PayNow/card bill has been paid this
+      session — separate from `paid`, which represents Home's overdue
+      state and is already true for this persona from the start. */
+  legacyBillPaid: boolean
+  setLegacyBillPaid: (v: boolean) => void
   deletedIds: string[]
   deleteCard: (id: string) => void
   addedCard: AddedCard | null
@@ -115,6 +125,8 @@ export const PaymentContext = createContext<PaymentState>({
   setPaid: () => {},
   userType: 'supernova',
   setUserType: () => {},
+  legacyBillPaid: false,
+  setLegacyBillPaid: () => {},
   deletedIds: [],
   deleteCard: () => {},
   addedCard: null,
