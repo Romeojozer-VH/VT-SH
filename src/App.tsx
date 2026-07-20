@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Route, useLocation, useNavigate } from 'react-router-dom'
 import PhoneFrame from './components/PhoneFrame'
 import PageTransition from './components/PageTransition'
 import BottomNav from './components/BottomNav'
 import CardAddedSheet from './components/CardAddedSheet'
 import { PaymentContext } from './payment'
+import { SuppressStatusBarContext } from './suppressStatusBarContext'
+import { detectMobile } from './isMobile'
+import { useSheetDrag } from './hooks/useSheetDrag'
 import Home from './screens/Home'
 import Pay from './screens/Pay'
 import PaymentMethods from './screens/PaymentMethods'
@@ -32,9 +35,14 @@ export default function App() {
   const navigate = useNavigate()
   const location = useLocation()
   const showNav = location.pathname === '/' || location.pathname === '/pay'
+  const [isMobile] = useState(detectMobile)
   const [framed, setFramed] = useState<boolean>(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
-    return saved === null ? true : saved === 'true'
+    // No saved preference yet — default the bezel mockup off on an actual
+    // mobile device (it's redundant there, the real phone IS the frame) and
+    // on for desktop, where it's the whole point of the prototype view.
+    if (saved === null) return !detectMobile()
+    return saved === 'true'
   })
   const [fit, setFit] = useState<boolean>(() => {
     const saved = localStorage.getItem(FIT_KEY)
@@ -51,6 +59,54 @@ export default function App() {
   const [cardAddedOpen, setCardAddedOpen] = useState(false)
   const [cardAddedClosing, setCardAddedClosing] = useState(false)
   const [resetKey, setResetKey] = useState(0)
+  const [mobileControlsOpen, setMobileControlsOpen] = useState(false)
+  const mobileControlsDrag = useSheetDrag(() => setMobileControlsOpen(false))
+
+  // Two-finger tap — on mobile the prototype controls are hidden (they'd
+  // otherwise eat screen space during a live demo); this gesture summons
+  // them as a closable modal instead. Desktop keeps the always-visible bar.
+  //
+  // In practice the two fingers almost never lift in the same event — one
+  // touchend fires with the other finger still down, then a second touchend
+  // fires once it lifts too. So state can't be cleared on the first partial
+  // lift (that would throw away tracking before the gesture ever finishes);
+  // movement is instead checked incrementally across every touchend and the
+  // tap/cancel decision only made once every finger is up.
+  const twoFingerTouch = useRef<{
+    time: number
+    points: { x: number; y: number }[]
+    moved: boolean
+  } | null>(null)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      twoFingerTouch.current = {
+        time: Date.now(),
+        points: Array.from(e.touches).map((t) => ({ x: t.clientX, y: t.clientY })),
+        moved: false,
+      }
+    } else if (e.touches.length > 2) {
+      // a third finger joined mid-gesture — no longer a clean two-finger tap
+      twoFingerTouch.current = null
+    }
+  }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const state = twoFingerTouch.current
+    if (!state) return
+    for (const t of Array.from(e.changedTouches)) {
+      const nearest = state.points.reduce(
+        (best, p) => Math.min(best, Math.hypot(t.clientX - p.x, t.clientY - p.y)),
+        Infinity,
+      )
+      if (nearest > 24) state.moved = true
+    }
+    if (e.touches.length !== 0) return // wait for every finger to lift
+    twoFingerTouch.current = null
+    if (state.moved || Date.now() - state.time > 400) return
+    setMobileControlsOpen((v) => !v)
+  }
+  const handleTouchCancel = () => {
+    twoFingerTouch.current = null
+  }
 
   const closeCardAdded = () => {
     setCardAddedClosing(true)
@@ -123,15 +179,23 @@ export default function App() {
         setPendingReopenSheet,
       }}
     >
+      <SuppressStatusBarContext.Provider value={isMobile && !framed}>
       <div
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         className={
           framed
-            ? 'flex min-h-screen w-full items-center justify-center bg-neutral-200 py-8'
-            : 'flex h-screen w-full justify-center overflow-hidden bg-neutral-200'
+            ? 'touch-pan-y flex min-h-screen w-full items-center justify-center bg-neutral-200 py-8'
+            : `touch-pan-y flex w-full justify-center overflow-hidden bg-neutral-200 ${
+                isMobile ? 'h-[100dvh]' : 'h-screen'
+              }`
         }
       >
-        {/* Prototype controls */}
-        <div className="fixed right-4 top-4 z-50 flex gap-2">
+        {/* Prototype controls — desktop only; on mobile these are hidden and
+            summoned via a two-finger tap (see the modal below) so they don't
+            eat screen space during a live demo. */}
+        <div className="fixed right-4 top-4 z-50 hidden gap-2 sm:flex">
           <button
             onClick={() => setFramed((v) => !v)}
             className="flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-sh-ink shadow-md backdrop-blur transition hover:bg-white"
@@ -149,6 +213,13 @@ export default function App() {
             </button>
           )}
           <button
+            onClick={() => setPaid((v) => !v)}
+            className="flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-sh-ink shadow-md backdrop-blur transition hover:bg-white"
+          >
+            <span>💳</span>
+            Overdue: {paid ? 'Off' : 'On'}
+          </button>
+          <button
             onClick={resetPrototype}
             className="flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-sh-ink shadow-md backdrop-blur transition hover:bg-white"
           >
@@ -156,6 +227,67 @@ export default function App() {
             Reset prototype
           </button>
         </div>
+
+        {/* Mobile controls modal — summoned by a two-finger tap anywhere on
+            the page. Closable via the X, the backdrop, or tapping again. */}
+        {mobileControlsOpen && (
+          <div
+            className="fixed inset-0 z-[200] flex items-end justify-center bg-black/50 sm:hidden"
+            onClick={() => setMobileControlsOpen(false)}
+          >
+            <div
+              {...mobileControlsDrag.handlers}
+              style={mobileControlsDrag.style}
+              className="w-full max-w-[430px] rounded-t-[24px] bg-white p-5 pb-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <span className="text-base font-bold text-sh-ink">
+                  Presentation settings
+                </span>
+                <button
+                  onClick={() => setMobileControlsOpen(false)}
+                  aria-label="Close"
+                  className="flex size-9 items-center justify-center rounded-full bg-neutral-100 text-sh-ink"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => setFramed((v) => !v)}
+                  className="flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-3 text-sm font-bold text-sh-ink"
+                >
+                  <span>📱</span>
+                  Frame: {framed ? 'On' : 'Off'}
+                </button>
+                {framed && (
+                  <button
+                    onClick={() => setFit((v) => !v)}
+                    className="flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-3 text-sm font-bold text-sh-ink"
+                  >
+                    <span>⤢</span>
+                    Fit to screen: {fit ? 'On' : 'Off'}
+                  </button>
+                )}
+                <button
+                  onClick={() => setPaid((v) => !v)}
+                  className="flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-3 text-sm font-bold text-sh-ink"
+                >
+                  <span>💳</span>
+                  Overdue: {paid ? 'Off' : 'On'}
+                </button>
+                <button
+                  onClick={resetPrototype}
+                  className="flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-3 text-sm font-bold text-sh-ink"
+                >
+                  <span>↺</span>
+                  Reset prototype
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {(() => {
           const frame = (
@@ -218,6 +350,7 @@ export default function App() {
           )
         })()}
       </div>
+      </SuppressStatusBarContext.Provider>
     </PaymentContext.Provider>
   )
 }

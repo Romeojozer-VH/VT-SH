@@ -1,4 +1,5 @@
 import { type CardBrand } from './CardLogo'
+import { useSheetDrag } from '../hooks/useSheetDrag'
 
 const label = (b: CardBrand) =>
   b === 'amex' ? 'AMEX' : b === 'visa' ? 'Visa' : b === 'mastercard' ? 'Mastercard' : 'eGIRO'
@@ -16,6 +17,7 @@ export default function CardAddedSheet({
   closing: boolean
   onClose: () => void
 }) {
+  const drag = useSheetDrag(onClose)
   return (
     <div className="absolute inset-0 z-[80] flex flex-col justify-end">
       <div
@@ -25,6 +27,8 @@ export default function CardAddedSheet({
         onClick={onClose}
       />
       <div
+        {...drag.handlers}
+        style={drag.style}
         className={`relative z-10 rounded-t-[24px] bg-white px-5 pb-8 pt-6 ${
           closing ? 'sheet-panel-out' : 'sheet-panel'
         }`}

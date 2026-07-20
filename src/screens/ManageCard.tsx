@@ -4,6 +4,7 @@ import { AssetIcon, MaskIcon, ICON, IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
 import CardLogo, { type CardBrand } from '../components/CardLogo'
 import { SheetPortal } from '../components/sheetPortal'
+import { useSheetDrag } from '../hooks/useSheetDrag'
 import { usePayment } from '../payment'
 
 interface CardInfo {
@@ -82,6 +83,7 @@ export default function ManageCard() {
       setClosing(false)
     }, 260)
   }
+  const drag = useSheetDrag(closeSheet)
 
   return (
     <div className="relative flex min-h-full flex-col bg-[#fafafa]">
@@ -217,6 +219,8 @@ export default function ManageCard() {
             onClick={closeSheet}
           />
           <div
+            {...drag.handlers}
+            style={drag.style}
             className={`relative z-10 rounded-t-[24px] bg-white px-5 pb-8 pt-6 ${
               closing ? 'sheet-panel-out' : 'sheet-panel'
             }`}
@@ -319,6 +323,8 @@ export default function ManageCard() {
             onClick={closeSheet}
           />
           <div
+            {...drag.handlers}
+            style={drag.style}
             className={`relative z-10 rounded-t-[24px] bg-white px-5 pb-8 pt-6 ${
               closing ? 'sheet-panel-out' : 'sheet-panel'
             }`}
@@ -391,6 +397,8 @@ export default function ManageCard() {
             onClick={closeSheet}
           />
           <div
+            {...drag.handlers}
+            style={drag.style}
             className={`relative z-10 rounded-t-[24px] bg-white px-5 pb-8 pt-6 ${
               closing ? 'sheet-panel-out' : 'sheet-panel'
             }`}

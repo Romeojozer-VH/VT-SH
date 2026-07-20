@@ -5,6 +5,7 @@ import StatusBar from '../components/StatusBar'
 import CardLogo, { type CardBrand } from '../components/CardLogo'
 import AddPaymentSheet from '../components/AddPaymentSheet'
 import { SheetPortal } from '../components/sheetPortal'
+import { useSheetDrag } from '../hooks/useSheetDrag'
 import {
   usePayment,
   type UpdateService,
@@ -100,6 +101,7 @@ export default function UpdatePaymentMethod() {
       setAddClosing(false)
     }, 260)
   }
+  const drag = useSheetDrag(closeSheet)
 
   const confirm = () => {
     if (!selected) return
@@ -272,6 +274,8 @@ export default function UpdatePaymentMethod() {
             onClick={closeSheet}
           />
           <div
+            {...drag.handlers}
+            style={drag.style}
             className={`relative z-10 rounded-t-[24px] bg-white px-5 pb-8 pt-6 ${
               closing ? 'sheet-panel-out' : 'sheet-panel'
             }`}

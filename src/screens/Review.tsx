@@ -5,6 +5,8 @@ import StatusBar from '../components/StatusBar'
 import CardLogo, { type CardBrand } from '../components/CardLogo'
 import AddPaymentSheet from '../components/AddPaymentSheet'
 import { SheetPortal } from '../components/sheetPortal'
+import { useSheetDrag } from '../hooks/useSheetDrag'
+import { useKeyboardInset } from '../hooks/useKeyboardInset'
 import { usePayment, type PaymentFlowConfig } from '../payment'
 
 const PAGE_BG = '#fafafa'
@@ -203,6 +205,7 @@ function ChangePaymentSheet({
 }) {
   const draft = cards.find((c) => c.id === draftId)
   const canContinue = !!draft && !draft.expired
+  const drag = useSheetDrag(onClose)
 
   return (
     <SheetPortal>
@@ -213,6 +216,8 @@ function ChangePaymentSheet({
       />
 
       <div
+        {...drag.handlers}
+        style={drag.style}
         className={`relative z-10 rounded-t-[24px] bg-white px-5 pb-8 pt-6 ${
           closing ? 'sheet-panel-out' : 'sheet-panel'
         }`}
@@ -334,6 +339,8 @@ function CvvSheet({
   const inputRef = useRef<HTMLInputElement>(null)
   const [cvv, setCvv] = useState('')
   const ready = cvv.length === 3
+  const drag = useSheetDrag(onClose)
+  const keyboardInset = useKeyboardInset()
 
   // focus without scrolling the background into view
   useEffect(() => {
@@ -342,12 +349,17 @@ function CvvSheet({
 
   return (
     <SheetPortal>
-    <div className="absolute inset-0 z-50 flex flex-col justify-end">
+    <div
+      className="absolute inset-0 z-50 flex flex-col justify-end"
+      style={{ paddingBottom: keyboardInset, transition: 'padding-bottom 0.2s ease-out' }}
+    >
       <div
         className={`absolute inset-0 bg-[#141414]/85 ${closing ? 'sheet-scrim-out' : 'sheet-scrim'}`}
         onClick={onClose}
       />
       <div
+        {...drag.handlers}
+        style={drag.style}
         className={`relative z-10 rounded-t-[24px] bg-white px-5 pb-8 pt-6 ${
           closing ? 'sheet-panel-out' : 'sheet-panel'
         }`}

@@ -4,6 +4,7 @@ import { AssetIcon, ICON, IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
 import InfoSheet from '../components/InfoSheet'
 import { SheetPortal } from '../components/sheetPortal'
+import { useSheetDrag } from '../hooks/useSheetDrag'
 import type { PaymentFlowConfig } from '../payment'
 
 const CANCEL_PLAN_FLOW: PaymentFlowConfig = {
@@ -173,6 +174,7 @@ export default function PayLaterPlanDetail() {
       setClosing(false)
     }, 260)
   }
+  const drag = useSheetDrag(closeSheet)
   const confirmCancel = () => {
     setClosing(true)
     window.setTimeout(() => {
@@ -378,6 +380,8 @@ export default function PayLaterPlanDetail() {
               onClick={closeSheet}
             />
             <div
+              {...drag.handlers}
+              style={drag.style}
               className={`relative z-10 rounded-t-[24px] bg-white px-5 pb-12 pt-6 ${
                 closing ? 'sheet-panel-out' : 'sheet-panel'
               }`}

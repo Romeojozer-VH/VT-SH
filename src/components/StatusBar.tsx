@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import { StatusBarHiddenContext } from '../statusBarContext'
+import { SuppressStatusBarContext } from '../suppressStatusBarContext'
 
 /* iOS status bar — pinned to the top of the phone screen. Transparent while
    at rest (the green banner shows through); once scrolled, a subtle top-down
@@ -14,6 +15,7 @@ function formatTime(d: Date) {
 
 export default function StatusBar() {
   const hidden = useContext(StatusBarHiddenContext)
+  const suppress = useContext(SuppressStatusBarContext)
   const ref = useRef<HTMLDivElement>(null)
   const [scrolled, setScrolled] = useState(false)
   const [now, setNow] = useState(() => new Date())
@@ -34,6 +36,11 @@ export default function StatusBar() {
     scroller?.addEventListener('scroll', onScroll, { passive: true })
     return () => scroller?.removeEventListener('scroll', onScroll)
   }, [])
+
+  // On an actual mobile device with the frame off, the real OS already
+  // shows its own status bar above the browser — ours would just duplicate
+  // it, so it's removed entirely (not just hidden — its space collapses).
+  if (suppress) return null
 
   return (
     <div

@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { AssetIcon, ICON } from './icons'
 import CardLogo, { type CardBrand } from './CardLogo'
 import { SheetPortal } from './sheetPortal'
+import { useSheetDrag } from '../hooks/useSheetDrag'
 import type { PaymentFlowConfig } from '../payment'
 
 const addOptions: {
@@ -37,6 +38,7 @@ export default function AddPaymentSheet({
 }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const drag = useSheetDrag(onClose)
   return (
     <SheetPortal>
       <div className="absolute inset-0 z-[60] flex flex-col justify-end">
@@ -47,6 +49,8 @@ export default function AddPaymentSheet({
           onClick={onClose}
         />
         <div
+          {...drag.handlers}
+          style={drag.style}
           className={`relative z-10 rounded-t-[24px] bg-white px-5 pb-8 pt-6 ${
             closing ? 'sheet-panel-out' : 'sheet-panel'
           }`}

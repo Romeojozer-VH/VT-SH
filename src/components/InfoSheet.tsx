@@ -1,5 +1,6 @@
 import { AssetIcon, ICON } from './icons'
 import { SheetPortal } from './sheetPortal'
+import { useSheetDrag } from '../hooks/useSheetDrag'
 
 /** Small "what is this?" info bottom sheet — icon, title, optional rate
     row, description. Shared by DeviceDollars / Balance left / etc. */
@@ -18,6 +19,7 @@ export default function InfoSheet({
   closing: boolean
   onClose: () => void
 }) {
+  const drag = useSheetDrag(onClose)
   return (
     <SheetPortal>
       <div className="absolute inset-0 z-[70] flex flex-col justify-end">
@@ -28,6 +30,8 @@ export default function InfoSheet({
           onClick={onClose}
         />
         <div
+          {...drag.handlers}
+          style={drag.style}
           className={`relative z-10 rounded-t-[24px] bg-white px-5 pb-12 pt-6 ${
             closing ? 'sheet-panel-out' : 'sheet-panel'
           }`}

@@ -4,6 +4,7 @@ import { AssetIcon, ICON, IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
 import CardLogo, { type CardBrand } from '../components/CardLogo'
 import { SheetPortal } from '../components/sheetPortal'
+import { useSheetDrag } from '../hooks/useSheetDrag'
 import { usePayment } from '../payment'
 
 interface ServiceItem {
@@ -76,6 +77,7 @@ export default function PaymentByServices() {
       setClosing(false)
     }, 260)
   }
+  const drag = useSheetDrag(closeSheet)
 
   const selectService = (item: ServiceItem, group: string) => {
     if (targetCard) {
@@ -200,6 +202,8 @@ export default function PaymentByServices() {
               onClick={closeSheet}
             />
             <div
+              {...drag.handlers}
+              style={drag.style}
               className={`relative z-10 rounded-t-[24px] bg-white px-5 pb-8 pt-6 ${
                 closing ? 'sheet-panel-out' : 'sheet-panel'
               }`}
