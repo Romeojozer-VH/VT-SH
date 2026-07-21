@@ -127,7 +127,7 @@ export default function LegacyPayNow() {
           <div className="mt-4 flex flex-col items-center gap-1">
             <PayNowQr />
             <p className="mt-2 text-[18px] font-bold leading-7 text-sh-green-text">
-              $66.00
+              $142.00
             </p>
             <p className="text-[12px] leading-4 text-sh-ink">Pay within {EXPIRY}</p>
           </div>

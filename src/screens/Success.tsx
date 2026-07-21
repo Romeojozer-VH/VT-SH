@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
@@ -7,30 +6,21 @@ import type { PaymentFlowConfig } from '../payment'
 export default function Success() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [leaving, setLeaving] = useState(false)
 
   const flow = (location.state as { flow?: PaymentFlowConfig } | null)?.flow
   const doneTo = flow?.doneTo ?? '/pay'
   const doneToSteps = flow?.doneToSteps
   const doneToLabel = flow?.doneToLabel ?? 'Back to pay dashboard'
 
-  const goToDashboard = () => {
-    setLeaving(true)
-    // A real history pop (when the flow tells us how deep), not a push to a
-    // fixed path — pushing here can leave a duplicate of doneTo's own entry
-    // behind for its back button to snag on.
-    setTimeout(
-      () => (doneToSteps ? navigate(-doneToSteps) : navigate(doneTo)),
-      300,
-    )
-  }
+  // A real history pop (when the flow tells us how deep), not a push to a
+  // fixed path — pushing here can leave a duplicate of doneTo's own entry
+  // behind for its back button to snag on. Either way, PageTransition
+  // treats leaving '/success' as a "back" slide regardless of navigation
+  // type, so the close animation is consistent.
+  const goToDashboard = () => (doneToSteps ? navigate(-doneToSteps) : navigate(doneTo))
 
   return (
-    <div
-      className={`relative flex min-h-full flex-col overflow-hidden bg-sh-green ${
-        leaving ? 'screen-exit' : ''
-      }`}
-    >
+    <div className="relative flex min-h-full flex-col overflow-hidden bg-sh-green">
       {/* portal on the green strip behind the status bar */}
       <img
         src={IMG.homePortal}

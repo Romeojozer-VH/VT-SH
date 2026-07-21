@@ -167,7 +167,7 @@ export default function App() {
     setPendingReopenSheet(null)
     setCardAddedOpen(false)
     setResetKey((k) => k + 1)
-    navigate('/')
+    navigate('/pay')
   }
   const loadScenario = (scenario: Scenario) => {
     resetPrototype(scenario.paid, scenario.userType ?? 'supernova')

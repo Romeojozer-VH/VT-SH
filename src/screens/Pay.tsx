@@ -6,10 +6,10 @@ import { usePayment } from '../payment'
 
 /* ---------- category tabs ---------- */
 const tabs = [
-  { icon: ICON.managePayment, label: 'Payment methods', to: '/payment-methods' },
+  { icon: ICON.managePayment, label: 'Manage payment methods', to: '/payment-methods' },
   {
     icon: ICON.manageServices,
-    label: 'Payment by services',
+    label: 'Manage payment by services',
     to: '/payment-by-services',
   },
 ]
@@ -27,7 +27,7 @@ function SocketTab({
   return (
     <button
       onClick={() => to && navigate(to)}
-      className="flex h-[86px] flex-1 flex-col justify-end rounded-[24px] border border-[#dadbda] bg-white p-4 text-left shadow-[0_4px_12px_rgba(20,20,20,0.1)]"
+      className="flex min-h-[86px] flex-1 flex-col justify-end rounded-[24px] border border-[#dadbda] bg-white p-4 text-left shadow-[0_4px_12px_rgba(20,20,20,0.1)]"
     >
       <AssetIcon src={icon} size={32} />
       <p className="mt-1 text-[14px] font-black leading-[18px] tracking-[0.15px] text-sh-ink">
@@ -47,7 +47,7 @@ function PayLaterRow() {
     >
       <AssetIcon src={ICON.payLater} size={32} className="shrink-0" />
       <p className="text-[14px] font-black leading-[18px] tracking-[0.15px] text-sh-ink">
-        PayLater plans
+        View Pay later plans
       </p>
     </button>
   )
@@ -107,7 +107,7 @@ function LegacyPaymentDueCard() {
           </div>
           <div className="flex flex-col items-end gap-0.5">
             <p className="whitespace-nowrap text-[16px] font-black leading-5 text-sh-ink">
-              $66.00
+              $142.00
             </p>
             <p className="whitespace-nowrap text-[12px] font-bold leading-4 text-[#727272]">
               28 Jul
@@ -256,6 +256,61 @@ const moreGroups: typeof groups = [
   },
 ]
 
+/* ---------- Legacy user's own activity history (Acc. 1.15655811A) ---------- */
+// Dated strictly before the current unpaid cycle (24 May – 23 Jun 2026,
+// billed 24 Jun) so they read as genuinely past/settled payments, not
+// overlapping with the still-outstanding bill above them.
+const LEGACY_HISTORY: typeof groups = [
+  {
+    month: 'May 2026',
+    days: [
+      {
+        date: '22 May',
+        txns: [
+          {
+            icon: ICON.legacyContract,
+            title: 'Acc. 1.15655811A',
+            desc: '2 mobiles, 1 TVs, 1 broadband, 1 DV',
+            amount: '-$156.80',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    month: 'Apr 2026',
+    days: [
+      {
+        date: '22 Apr',
+        txns: [
+          {
+            icon: ICON.legacyContract,
+            title: 'Acc. 1.15655811A',
+            desc: '2 mobiles, 1 TVs, 1 broadband, 1 DV',
+            amount: '-$149.20',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    month: 'Mar 2026',
+    days: [
+      {
+        date: '22 Mar',
+        txns: [
+          {
+            icon: ICON.legacyContract,
+            title: 'Acc. 1.15655811A',
+            desc: '2 mobiles, 1 TVs, 1 broadband, 1 DV',
+            amount: '-$138.50',
+          },
+        ],
+      },
+    ],
+  },
+]
+
 /* ================= PAY SCREEN ================= */
 export default function Pay() {
   const { paid, userType, legacyBillPaid } = usePayment()
@@ -300,7 +355,7 @@ export default function Pay() {
                     icon: ICON.legacyContract,
                     title: 'Acc. 1.15655811A',
                     desc: '2 mobiles, 1 TVs, 1 broadband, 1 DV',
-                    amount: '-$66.00',
+                    amount: '-$142.00',
                   },
                 ],
               },
@@ -308,12 +363,12 @@ export default function Pay() {
           },
         ]
       : []
-  const allGroups = [
-    ...latestPayment,
-    ...legacyPayment,
-    ...groups,
-    ...(loaded ? moreGroups : []),
-  ]
+  // Legacy's activity list is scoped to just its own account — the
+  // generic SuperNova mock transactions (groups/moreGroups) don't apply.
+  const allGroups =
+    userType === 'legacy'
+      ? [...legacyPayment, ...LEGACY_HISTORY]
+      : [...latestPayment, ...legacyPayment, ...groups, ...(loaded ? moreGroups : [])]
   return (
     <div className="relative flex min-h-full flex-col bg-[#fafafa]">
       {/* Green banner — wraps the top section directly (status bar through
@@ -434,7 +489,7 @@ export default function Pay() {
           {/* Load more — extra bottom clearance so it isn't hidden under the
               persistent bottom nav, which overlays the screen. */}
           <div className="flex justify-center pb-16 pt-6">
-            {!loaded && (
+            {userType !== 'legacy' && !loaded && (
               <button
                 onClick={() => setLoaded(true)}
                 className="flex h-9 items-center rounded-full border border-sh-line bg-white px-5 text-[14px] font-black text-sh-ink shadow-[0_2px_4px_rgba(20,20,20,0.1)] active:scale-95"

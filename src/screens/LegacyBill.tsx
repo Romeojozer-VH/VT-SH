@@ -18,8 +18,8 @@ const LEGACY_CARD_PAY_FLOW: PaymentFlowConfig = {
     eyebrow: 'Legacy account',
     name: 'Acc. 1.15655811A',
     description: 'Outstanding balance',
-    date: '22 May 2026',
-    amount: '$66.00',
+    date: '24 Jun 2026',
+    amount: '$142.00',
     lineItems: [],
   },
   setPaidOnSuccess: false,
@@ -45,15 +45,20 @@ const TearLine = forwardRef<HTMLDivElement>((_, ref) => (
 ))
 TearLine.displayName = 'TearLine'
 
+// Line items grounded in real StarHub pricing (5G Unlimited+ tiers run
+// $38–$188; HomeHub fibre broadband $29.55–$39.91 base, higher for
+// bundled/"UltraSpeed" tiers; TV+ passes from $5.08). Tuned to sum to
+// exactly the $142.00 total outstanding used across the rest of this
+// scenario, so nothing else needed to change.
 const LINE_ITEMS: [string, string][] = [
-  ['5G+ Unlimited Core', '$30.25'],
-  ['Mobile', '$30.25'],
-  ['HomeHub+ UltraSpeed', '$40.25'],
-  ['TV', '$35.25'],
-  ['Broadband', '$35.25'],
-  ['Total current charges', '$171.25'],
+  ['5G+ Unlimited Core', '$38.00'],
+  ['Mobile', '$22.00'],
+  ['HomeHub+ UltraSpeed', '$42.90'],
+  ['TV', '$19.90'],
+  ['Broadband', '$19.20'],
+  ['Total current charges', '$142.00'],
   ['Previous balance', '$0.00'],
-  ['Previous payment', '-$105.25'],
+  ['Previous payment', '$0.00'],
 ]
 
 /* receipt-style bill — account + bill-cycle header, itemized charges,
@@ -141,7 +146,7 @@ function Bill() {
             <p className="text-[14px] font-bold leading-5 text-[#727272]">
               Total outstanding (bill)
             </p>
-            <p className="text-[14px] font-black leading-5 text-sh-ink">$66.00</p>
+            <p className="text-[14px] font-black leading-5 text-sh-ink">$142.00</p>
           </div>
         </div>
 
@@ -294,10 +299,10 @@ export default function LegacyBill() {
             </p>
             <div className="flex flex-col items-end gap-0.5">
               <p className="whitespace-nowrap text-[12px] leading-4 text-[#727272]">
-                As on 22 May 2026
+                As on 24 Jun 2026
               </p>
               <p className="whitespace-nowrap text-[24px] font-black leading-8 text-sh-ink">
-                $66.00
+                $142.00
               </p>
             </div>
           </div>

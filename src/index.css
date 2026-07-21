@@ -123,20 +123,6 @@ body {
 .success-rise {
   animation: success-rise 0.45s ease-out both;
 }
-@keyframes screen-exit {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.98);
-  }
-}
-.screen-exit {
-  animation: screen-exit 0.32s ease-in forwards;
-}
-
 /* Subtle page transition on route change */
 @keyframes page-fade {
   from {
@@ -150,28 +136,32 @@ body {
   animation: page-fade 0.3s ease-in-out;
 }
 
-/* Push/pop screen transition — child screens slide in from the right over
-   their parent; going back reverses it, sliding the child back out. */
-@keyframes screen-push-in {
+/* Push/pop screen transition — parent and child screens are literal
+   side-by-side siblings in one 200%-wide row (child always to the right of
+   parent); the row itself translates by one screen-width. This is a single
+   physically-connected strip, not two independently-animated stacked
+   (z-indexed) layers — that older approach was what read as one screen
+   "overlaying" the other instead of genuinely pushing it aside. */
+@keyframes screen-row-forward {
   from {
-    transform: translateX(100%);
+    transform: translateX(0%);
   }
   to {
-    transform: translateX(0);
+    transform: translateX(-50%);
   }
 }
-@keyframes screen-pop-out {
+@keyframes screen-row-back {
   from {
-    transform: translateX(0);
+    transform: translateX(-50%);
   }
   to {
-    transform: translateX(100%);
+    transform: translateX(0%);
   }
 }
-.screen-push-in {
-  animation: screen-push-in 0.3s ease-out both;
+.screen-row-forward {
+  animation: screen-row-forward 0.3s ease-out both;
 }
-.screen-pop-out {
-  animation: screen-pop-out 0.3s ease-out both;
+.screen-row-back {
+  animation: screen-row-back 0.3s ease-out both;
 }
 

@@ -13,8 +13,12 @@ const NO_TRANSITION = new Set([
   '/card-updated',
   '/gateway',
   '/redirecting',
-  '/success',
 ])
+
+// Success has no back button and no history to slide in from, so *entering*
+// it (forward) stays an instant swap — but *leaving* it via its own CTA
+// should still slide, so it's deliberately left out of NO_TRANSITION.
+const NO_TRANSITION_ENTER_ONLY = new Set(['/success'])
 
 // Screens that render their own dark "external site" chrome instead of the
 // shared StatusBar — don't paint the light status-bar overlay over these.
@@ -38,11 +42,20 @@ export default function PageTransition({ children }: PageTransitionProps) {
     currentRef.current = location
     if (location.pathname === from.pathname) return
 
-    const direction: 'forward' | 'back' = navigationType === 'POP' ? 'back' : 'forward'
+    let direction: 'forward' | 'back' = navigationType === 'POP' ? 'back' : 'forward'
+    // Leaving Success is always a "closing" motion — slide right, pulling
+    // the parent screen in from the left — regardless of whether the
+    // underlying navigation is a real history pop or a push to a fixed
+    // path (some flows don't know their exact back-depth and just push).
+    if (from.pathname === '/success') direction = 'back'
+
     // Whichever screen is animating on top — the incoming child on a push,
     // the outgoing child on a pop — must be a screen that has a back button.
     const topPathname = direction === 'forward' ? location.pathname : from.pathname
-    if (NO_TRANSITION.has(topPathname)) {
+    if (
+      NO_TRANSITION.has(topPathname) ||
+      (direction === 'forward' && NO_TRANSITION_ENTER_ONLY.has(topPathname))
+    ) {
       setPrev(null)
       return
     }
@@ -73,20 +86,24 @@ export default function PageTransition({ children }: PageTransitionProps) {
     <div className="relative h-full w-full overflow-hidden">
       {/* The OS status bar (and the physical notch, painted separately by
           PhoneFrame) is device chrome, not app content — it must stay put
-          while the screen underneath slides. Both layers below still mount
-          their own StatusBar as part of their normal content, but it hides
-          itself via context while a transition is active; this single
-          static copy is the only one actually visible for the duration. */}
+          while the row below slides. The parent and child screens are laid
+          out as literal side-by-side siblings in a 200%-wide flex row (child
+          always to the right of parent), and the whole row translates by
+          one screen-width — never two independently-animated, stacked
+          (z-indexed) layers, which is what made it read as an overlay
+          instead of a real push. */}
       <StatusBarHiddenContext.Provider value={true}>
-        <div className="absolute inset-0 z-0 bg-white">
-          <Routes location={baseLocation}>{children}</Routes>
-        </div>
         <div
-          className={`absolute inset-0 z-10 bg-white ${
-            topIsNew ? 'screen-push-in' : 'screen-pop-out'
+          className={`absolute inset-0 flex h-full w-[200%] bg-white ${
+            topIsNew ? 'screen-row-forward' : 'screen-row-back'
           }`}
         >
-          <Routes location={topLocation}>{children}</Routes>
+          <div className="h-full w-1/2 shrink-0">
+            <Routes location={baseLocation}>{children}</Routes>
+          </div>
+          <div className="h-full w-1/2 shrink-0">
+            <Routes location={topLocation}>{children}</Routes>
+          </div>
         </div>
       </StatusBarHiddenContext.Provider>
       {showStatusBarOverlay && (

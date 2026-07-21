@@ -192,20 +192,6 @@ export default function ManageCard() {
           </div>
         )}
 
-        <button
-          onClick={() => navigate('/payment-by-services', { state: { targetCard: card } })}
-          className="mt-4 flex h-11 w-full items-center justify-center gap-1.5 rounded-full border border-sh-line bg-white text-[14px] font-black text-sh-ink shadow-[0_2px_4px_rgba(20,20,20,0.08)] active:scale-[0.99]"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 5v14M5 12h14"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-            />
-          </svg>
-          Add a service
-        </button>
       </div>
 
       {/* "Can't delete yet" bottom sheet (card still has services) */}
