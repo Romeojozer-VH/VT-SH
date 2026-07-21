@@ -93,7 +93,7 @@ export const ICON = {
   visa: '/Icons/Visa.svg',
   mobileSim: '/Icons/mobile-sim.svg',
   amex: '/Amex.jpg',
-  egiro: '/eGiro.jpg',
+  egiro: '/eGiro-Latest.jpg',
 } as const
 
 export const IMG = {

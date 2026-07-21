@@ -93,14 +93,7 @@ export default function AddPaymentSheet({
                 className="flex flex-col rounded-[16px] border border-sh-line bg-white p-4 text-left shadow-[0_2px_8px_rgba(20,20,20,0.08)] active:scale-[0.99]"
               >
                 <div className="flex items-center gap-3">
-                  {o.kind === 'egiro' ? (
-                    <span className="w-8 text-[13px] font-black leading-none">
-                      <span className="text-[#e6007e]">e</span>
-                      <span className="text-[#4b2e83]">GIRO</span>
-                    </span>
-                  ) : (
-                    <CardLogo brand={o.kind} />
-                  )}
+                  <CardLogo brand={o.kind} />
                   <span className="flex-1 text-[16px] font-bold text-sh-ink">
                     {o.name}
                   </span>
