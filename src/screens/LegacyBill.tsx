@@ -7,28 +7,20 @@ import { SheetPortal } from '../components/sheetPortal'
 import { useSheetDrag } from '../hooks/useSheetDrag'
 import type { PaymentFlowConfig } from '../payment'
 
-// Any card option (Visa/Mastercard/AMEX) reuses the existing Review → CVV →
-// Redirecting → BankOtp → Success flow, same as the rest of the app. Pay →
-// LegacyBill → Review → Redirecting (replaced by Bank) → Success is 4 real
-// pushes deep, so Success's "Done" needs to pop back exactly that far to
-// land on Pay with no duplicate entry.
+// The card was already picked in the "Choose a payment method" sheet, so
+// this skips Review's own card picker and CVV entry entirely and goes
+// straight into Redirecting → BankOtp → Success, same terminal steps as
+// the rest of the app. Pay → LegacyBill → Redirecting (replaced by Bank) →
+// Success is 3 real pushes deep, so Success's "Done" needs to pop back
+// exactly that far to land on Pay with no duplicate entry.
 const LEGACY_CARD_PAY_FLOW: PaymentFlowConfig = {
-  defaultCardId: 'amex',
-  receipt: {
-    eyebrow: 'Legacy account',
-    name: 'Acc. 1.15655811A',
-    description: 'Outstanding balance',
-    date: '22 Jun 2026',
-    amount: '$142.00',
-    lineItems: [],
-  },
   setPaidOnSuccess: false,
   setLegacyBillPaidOnSuccess: true,
   successTitle: 'Payment successful!',
   successDescription: 'Your payment has been received and successfully processed',
   doneToLabel: 'Back to My payment',
   doneTo: '/pay',
-  doneToSteps: 4,
+  doneToSteps: 3,
 }
 
 /* dashed tear-line (side notches are cut from the receipt via a mask) */
@@ -222,7 +214,12 @@ export default function LegacyBill() {
     window.setTimeout(() => {
       setSheetOpen(false)
       setClosing(false)
-      navigate('/review', { state: { flow: LEGACY_CARD_PAY_FLOW } })
+      // Card was already chosen in this sheet — skip Review's own card
+      // picker and CVV entry, go straight into the payment gateway
+      // redirect (same as Review's CVV step would) into bank auth.
+      navigate('/redirecting', {
+        state: { next: '/bank', flow: LEGACY_CARD_PAY_FLOW },
+      })
     }, 260)
   }
 
