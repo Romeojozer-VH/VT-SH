@@ -83,7 +83,7 @@ export default function App() {
     return saved === null ? true : saved === 'true'
   })
   const [scale, setScale] = useState(1)
-  const [paid, setPaid] = useState(false)
+  const [paid, setPaid] = useState(true)
   const [userType, setUserType] = useState<UserType>('supernova')
   const [legacyBillPaid, setLegacyBillPaid] = useState(false)
   const [deletedIds, setDeletedIds] = useState<string[]>([])
