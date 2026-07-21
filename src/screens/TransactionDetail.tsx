@@ -145,15 +145,15 @@ function Receipt({ data }: { data: TransactionDetailState }) {
 
           <TearLine ref={t2} />
 
-          <div className="flex flex-col gap-3 px-4 pb-6 pt-3">
+          <div className="flex flex-col px-4 pb-6 pt-3">
             <div className="flex items-center justify-between">
               <p className="text-[14px] font-bold leading-5 text-[#727272]">Amount paid</p>
               <p className="text-[14px] font-black leading-5 text-sh-ink">{data.amount}</p>
             </div>
 
-            <div className="h-px w-full bg-[#A8EDB2]" />
+            <div className="mt-4 h-px w-full bg-[#A8EDB2]" />
 
-            <div className="flex flex-col gap-1">
+            <div className="mt-3 flex flex-col gap-1">
               <p className="text-[14px] leading-5 text-[#727272]">Payment method</p>
               <div className="flex items-center gap-2">
                 {data.paymentMethod.type === 'card' ? (
@@ -176,7 +176,7 @@ function Receipt({ data }: { data: TransactionDetailState }) {
               </div>
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="mt-3 flex flex-col gap-1">
               <p className="text-[14px] leading-5 text-[#727272]">Transaction ID</p>
               <p className="text-[14px] font-bold text-sh-ink">{data.transactionId}</p>
             </div>
