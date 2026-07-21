@@ -39,17 +39,18 @@ export default function StatusBar() {
 
   // On an actual mobile device with the frame off, the real OS already
   // shows its own status bar above the browser — ours would just duplicate
-  // it, so it's removed entirely (not just hidden — its space collapses).
-  if (suppress) return null
-
+  // it, so the time/signal/wifi/battery glyphs (and the legibility scrim
+  // they exist for) are hidden. The row itself stays in the layout at the
+  // same height/padding though, so screens built assuming this space
+  // exists don't shift compared to the framed/desktop view.
   return (
     <div
       ref={ref}
       className={`sticky top-0 z-40 flex items-center justify-between px-6 pb-1 pt-3 text-sh-ink transition-opacity duration-200 ${
         hidden ? 'opacity-0' : ''
-      }`}
+      } ${suppress ? 'invisible' : ''}`}
       style={
-        scrolled
+        scrolled && !suppress
           ? {
               background:
                 'linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 78.369%)',
