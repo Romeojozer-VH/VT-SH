@@ -18,7 +18,7 @@ const LEGACY_CARD_PAY_FLOW: PaymentFlowConfig = {
     eyebrow: 'Legacy account',
     name: 'Acc. 1.15655811A',
     description: 'Outstanding balance',
-    date: '24 Jun 2026',
+    date: '22 Jun 2026',
     amount: '$142.00',
     lineItems: [],
   },
@@ -294,7 +294,7 @@ export default function LegacyBill() {
             </p>
             <div className="flex flex-col items-end gap-0.5">
               <p className="whitespace-nowrap text-[12px] leading-4 text-[#727272]">
-                As on 24 Jun 2026
+                As on 22 Jun 2026
               </p>
               <p className="whitespace-nowrap text-[24px] font-black leading-8 text-sh-ink">
                 $142.00

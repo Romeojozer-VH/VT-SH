@@ -110,7 +110,7 @@ function LegacyPaymentDueCard() {
               $142.00
             </p>
             <p className="whitespace-nowrap text-[12px] font-bold leading-4 text-[#727272]">
-              28 Jul
+              22 Jun
             </p>
           </div>
         </div>
