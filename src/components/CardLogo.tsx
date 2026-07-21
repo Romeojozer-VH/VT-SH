@@ -24,15 +24,10 @@ export default function CardLogo({
         </svg>
       )}
       {brand === 'egiro' && (
-        <span className="text-[13px] font-black leading-none">
-          <span className="text-[#e6007e]">e</span>
-          <span className="text-[#4b2e83]">GIRO</span>
-        </span>
+        <img src={ICON.egiro} alt="eGIRO" className="h-6 w-8 object-contain" />
       )}
       {brand === 'amex' && (
-        <span className="flex h-5 w-8 items-center justify-center rounded-[3px] bg-[#2E77BC] text-[7px] font-black leading-none text-white">
-          AMEX
-        </span>
+        <img src={ICON.amex} alt="AMEX" className="h-6 w-8 rounded-[3px] object-contain" />
       )}
     </span>
   )

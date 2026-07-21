@@ -92,6 +92,8 @@ export const ICON = {
   chevron: '/Icons/chevron-right.svg',
   visa: '/Icons/Visa.svg',
   mobileSim: '/Icons/mobile-sim.svg',
+  amex: '/Amex.jpg',
+  egiro: '/eGiro.jpg',
 } as const
 
 export const IMG = {
