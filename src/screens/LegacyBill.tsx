@@ -285,29 +285,9 @@ export default function LegacyBill() {
           </button>
         </div>
 
-        <div className="my-8 h-px w-full bg-sh-line" />
-
-        <p className="mb-3 text-[16px] font-black leading-6 text-sh-ink">Payment</p>
-
-        <div className="rounded-[24px] border border-sh-line bg-white p-4">
-          <div className="flex items-start justify-between gap-4">
-            <p className="text-[16px] font-bold leading-5 text-sh-ink">
-              Outstanding balance
-            </p>
-            <div className="flex flex-col items-end gap-0.5">
-              <p className="whitespace-nowrap text-[12px] leading-4 text-[#727272]">
-                As on 22 Jun 2026
-              </p>
-              <p className="whitespace-nowrap text-[24px] font-black leading-8 text-sh-ink">
-                $142.00
-              </p>
-            </div>
-          </div>
-        </div>
-
         <button
           onClick={() => setSheetOpen(true)}
-          className="mt-6 h-14 w-full rounded-full bg-sh-green text-[16px] font-black text-sh-ink shadow-[0_16px_16px_-8px_rgba(20,20,20,0.1),0_4px_2px_rgba(20,20,20,0.05)] active:scale-[0.99]"
+          className="mt-8 h-14 w-full rounded-full bg-sh-green text-[16px] font-black text-sh-ink shadow-[0_16px_16px_-8px_rgba(20,20,20,0.1),0_4px_2px_rgba(20,20,20,0.05)] active:scale-[0.99]"
         >
           Make one-time payment now
         </button>
