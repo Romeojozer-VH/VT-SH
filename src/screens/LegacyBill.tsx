@@ -2,7 +2,7 @@ import { forwardRef, useLayoutEffect, useRef, useState, type ReactNode } from 'r
 import { useNavigate } from 'react-router-dom'
 import { AssetIcon, ICON, IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
-import CardLogo from '../components/CardLogo'
+import CardLogo, { type CardBrand } from '../components/CardLogo'
 import { SheetPortal } from '../components/sheetPortal'
 import { useSheetDrag } from '../hooks/useSheetDrag'
 import type { PaymentFlowConfig } from '../payment'
@@ -209,16 +209,21 @@ export default function LegacyBill() {
       navigate('/legacy-paynow')
     }, 260)
   }
-  const selectCard = () => {
+  const selectCard = (brand: CardBrand) => {
     setClosing(true)
     window.setTimeout(() => {
       setSheetOpen(false)
       setClosing(false)
       // Card was already chosen in this sheet — skip Review's own card
       // picker and CVV entry, go straight into the payment gateway
-      // redirect (same as Review's CVV step would) into bank auth.
+      // redirect (same as Review's CVV step would) into bank auth. Stamp
+      // which brand was tapped so the transaction detail screen can show
+      // the real payment method instead of always assuming PayNow.
       navigate('/redirecting', {
-        state: { next: '/bank', flow: LEGACY_CARD_PAY_FLOW },
+        state: {
+          next: '/bank',
+          flow: { ...LEGACY_CARD_PAY_FLOW, legacyPaymentMethod: brand },
+        },
       })
     }, 260)
   }
@@ -356,17 +361,17 @@ export default function LegacyBill() {
                 <PaymentMethodRow
                   logo={<CardLogo brand="visa" />}
                   label="Visa"
-                  onClick={selectCard}
+                  onClick={() => selectCard('visa')}
                 />
                 <PaymentMethodRow
                   logo={<CardLogo brand="mastercard" />}
                   label="Mastercard"
-                  onClick={selectCard}
+                  onClick={() => selectCard('mastercard')}
                 />
                 <PaymentMethodRow
                   logo={<CardLogo brand="amex" />}
                   label="AMEX"
-                  onClick={selectCard}
+                  onClick={() => selectCard('amex')}
                 />
                 <PaymentMethodRow
                   logo={<PayNowLogo />}

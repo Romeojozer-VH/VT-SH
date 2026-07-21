@@ -3,6 +3,24 @@ import { useNavigate } from 'react-router-dom'
 import { AssetIcon, ICON, IMG } from '../components/icons'
 import StatusBar from '../components/StatusBar'
 import { usePayment } from '../payment'
+import type { TransactionDetailState } from './TransactionDetail'
+import type { BillDetailState } from './BillDetail'
+import type { CardBrand } from '../components/CardLogo'
+
+// Same last4s used for these brands everywhere else in the app (Manage
+// payment, Review's card picker) — keeps the receipt consistent with them.
+const LEGACY_CARD_LABEL: Record<CardBrand, string> = {
+  visa: 'Visa',
+  mastercard: 'Mastercard',
+  amex: 'AMEX',
+  egiro: 'eGIRO',
+}
+const LEGACY_CARD_LAST4: Record<CardBrand, string> = {
+  visa: '1234',
+  mastercard: '1112',
+  amex: '8824',
+  egiro: '022',
+}
 
 /* ---------- category tabs ---------- */
 const tabs = [
@@ -134,37 +152,52 @@ interface Txn {
   desc?: string
   card?: boolean
   amount: string
+  to?: string
+  state?: TransactionDetailState | BillDetailState
 }
 
 function TransactionRow({ txn, divider }: { txn: Txn; divider: boolean }) {
-  return (
-    <div className="flex flex-col">
-      <div className="flex gap-2 py-3">
-        <AssetIcon src={txn.icon} size={32} className="mt-0.5 shrink-0" />
-        <div className="flex flex-1 gap-1">
-          <div className="flex flex-1 flex-col gap-1">
-            {txn.eyebrow && (
-              <p className="text-[12px] font-bold leading-[14px] text-sh-green-text">
-                {txn.eyebrow}
-              </p>
-            )}
-            <p className="text-[16px] font-bold leading-5 text-sh-ink">{txn.title}</p>
-            {txn.desc && <p className="text-[14px] leading-5 text-[#434343]">{txn.desc}</p>}
-            {txn.card && (
-              <div className="flex items-center gap-2">
-                <img src={ICON.visa} alt="Visa" className="h-5 w-auto" />
-                <span className="text-[14px] font-bold text-sh-ink">Ending 1234</span>
-              </div>
-            )}
-          </div>
-          <p className="whitespace-nowrap text-[16px] font-black leading-5 text-sh-ink">
-            {txn.amount}
-          </p>
-          <div className="flex items-start pt-0.5">
-            <AssetIcon src={ICON.chevron} size={16} />
-          </div>
+  const navigate = useNavigate()
+  const content = (
+    <>
+      <AssetIcon src={txn.icon} size={32} className="mt-0.5 shrink-0" />
+      <div className="flex flex-1 gap-1">
+        <div className="flex flex-1 flex-col gap-1">
+          {txn.eyebrow && (
+            <p className="text-[12px] font-bold leading-[14px] text-sh-green-text">
+              {txn.eyebrow}
+            </p>
+          )}
+          <p className="text-[16px] font-bold leading-5 text-sh-ink">{txn.title}</p>
+          {txn.desc && <p className="text-[14px] leading-5 text-[#434343]">{txn.desc}</p>}
+          {txn.card && (
+            <div className="flex items-center gap-2">
+              <img src={ICON.visa} alt="Visa" className="h-5 w-auto" />
+              <span className="text-[14px] font-bold text-sh-ink">Ending 1234</span>
+            </div>
+          )}
+        </div>
+        <p className="whitespace-nowrap text-[16px] font-black leading-5 text-sh-ink">
+          {txn.amount}
+        </p>
+        <div className="flex items-start pt-0.5">
+          <AssetIcon src={ICON.chevron} size={16} />
         </div>
       </div>
+    </>
+  )
+  return (
+    <div className="flex flex-col">
+      {txn.to ? (
+        <button
+          onClick={() => navigate(txn.to as string, { state: txn.state })}
+          className="flex w-full gap-2 py-3 text-left active:opacity-70"
+        >
+          {content}
+        </button>
+      ) : (
+        <div className="flex gap-2 py-3">{content}</div>
+      )}
       {divider && <div className="h-px w-full bg-sh-line" />}
     </div>
   )
@@ -178,14 +211,53 @@ const groups: { month: string; days: { date: string; txns: Txn[] }[] }[] = [
       {
         date: '26 Jun',
         txns: [
-          { icon: ICON.mobileSim, eyebrow: 'Mobile', title: '9111 2222', desc: '5G+ Unlimited Core', card: true, amount: '-$42.00' },
+          {
+            icon: ICON.mobileSim,
+            eyebrow: 'Mobile',
+            title: '9111 2222',
+            desc: '5G+ Unlimited Core',
+            card: true,
+            amount: '-$42.00',
+            to: '/transaction-detail',
+            state: {
+              eyebrow: 'Mobile plan',
+              name: '9111 2222',
+              desc: '5G+ Unlimited Core',
+              date: '26 Jun 2026',
+              amount: '$42.00',
+              monthlyAmount: '$42.00/mth',
+              paymentMethod: { type: 'card', brand: 'visa', label: 'Visa', last4: '1234' },
+              transactionId: '1234fhtesx12467',
+            },
+          },
           { icon: ICON.addOn, eyebrow: 'Add on', title: 'Add-on', desc: 'Additional info', card: true, amount: '-$12.00' },
         ],
       },
       {
         date: '12 Jun',
         txns: [
-          { icon: ICON.legacyContract, title: 'Acc. 1.15655811B', desc: '2 mobiles, 1 TV, 1 broadband, 1 DV', amount: '-$142.00' },
+          {
+            icon: ICON.legacyContract,
+            title: 'Acc. 1.15655811A',
+            desc: '2 mobiles, 1 TV, 1 broadband, 1 DV',
+            amount: '-$142.00',
+            to: '/bill-detail',
+            state: {
+              account: 'Acc. 1.15655811A',
+              billCycle: '24 May 26 – 23 Jun 26',
+              lineItems: [
+                ['5G+ Unlimited Core', '$30.25'],
+                ['Mobile', '$25.25'],
+                ['HomeHub+ UltraSpeed', '$40.25'],
+                ['TV', '$25.25'],
+                ['Broadband', '$21.00'],
+                ['Total current charges', '$142.00'],
+                ['Previous balance', '$00.00'],
+                ['Previous payment', '-$00.00'],
+              ],
+              total: '$142.00',
+            },
+          },
         ],
       },
     ],
@@ -272,6 +344,22 @@ const LEGACY_HISTORY: typeof groups = [
             title: 'Acc. 1.15655811A',
             desc: '2 mobiles, 1 TVs, 1 broadband, 1 DV',
             amount: '-$156.80',
+            to: '/bill-detail',
+            state: {
+              account: 'Acc. 1.15655811A',
+              billCycle: '24 Apr 26 – 23 May 26',
+              lineItems: [
+                ['5G+ Unlimited Core', '$33.00'],
+                ['Mobile', '$28.00'],
+                ['HomeHub+ UltraSpeed', '$44.00'],
+                ['TV', '$28.00'],
+                ['Broadband', '$23.80'],
+                ['Total current charges', '$156.80'],
+                ['Previous balance', '$00.00'],
+                ['Previous payment', '-$00.00'],
+              ],
+              total: '$156.80',
+            },
           },
         ],
       },
@@ -313,49 +401,45 @@ const LEGACY_HISTORY: typeof groups = [
 
 /* ================= PAY SCREEN ================= */
 export default function Pay() {
-  const { paid, userType, legacyBillPaid } = usePayment()
+  const { paid, userType, legacyBillPaid, legacyPaymentMethod } = usePayment()
   const [loaded, setLoaded] = useState(false)
   // Legacy has a manual PayNow bill to show here regardless of "paid"
   // (Home can be happy/no-overdue while this still needs action) — it
   // disappears once legacyBillPaid flips true instead.
   const showPaymentDue = userType === 'legacy' ? !legacyBillPaid : !paid
-  const latestPayment: typeof groups =
-    userType === 'supernova' && paid
-      ? [
-          {
-            month: 'Jul 2026',
-            days: [
-              {
-                date: '5 Jul',
-                txns: [
-                  {
-                    icon: ICON.mobileSim,
-                    eyebrow: 'Mobile',
-                    title: '9111 2222',
-                    desc: '5G+ Unlimited Core',
-                    card: true,
-                    amount: '-$66.44',
-                  },
-                ],
-              },
-            ],
-          },
-        ]
-      : []
   const legacyPayment: typeof groups =
     userType === 'legacy' && legacyBillPaid
       ? [
           {
-            month: 'Jul 2026',
+            month: 'Jun 2026',
             days: [
               {
-                date: '5 Jul',
+                date: '22 Jun',
                 txns: [
                   {
                     icon: ICON.legacyContract,
                     title: 'Acc. 1.15655811A',
                     desc: '2 mobiles, 1 TVs, 1 broadband, 1 DV',
                     amount: '-$142.00',
+                    to: '/transaction-detail',
+                    state: {
+                      eyebrow: 'Legacy account',
+                      name: 'Acc. 1.15655811A',
+                      desc: '2 mobiles, 1 TVs, 1 broadband, 1 DV',
+                      date: '22 Jun 2026',
+                      amount: '$142.00',
+                      monthlyAmount: '$142.00/mth',
+                      paymentMethod:
+                        legacyPaymentMethod && legacyPaymentMethod !== 'paynow'
+                          ? {
+                              type: 'card',
+                              brand: legacyPaymentMethod,
+                              label: LEGACY_CARD_LABEL[legacyPaymentMethod],
+                              last4: LEGACY_CARD_LAST4[legacyPaymentMethod],
+                            }
+                          : { type: 'paynow' },
+                      transactionId: '1155811Afhtesx22467',
+                    },
                   },
                 ],
               },
@@ -368,7 +452,7 @@ export default function Pay() {
   const allGroups =
     userType === 'legacy'
       ? [...legacyPayment, ...LEGACY_HISTORY]
-      : [...latestPayment, ...legacyPayment, ...groups, ...(loaded ? moreGroups : [])]
+      : [...legacyPayment, ...groups, ...(loaded ? moreGroups : [])]
   return (
     <div className="relative flex min-h-full flex-col bg-[#fafafa]">
       {/* Green banner — wraps the top section directly (status bar through
@@ -460,7 +544,7 @@ export default function Pay() {
               showPaymentDue ? 'pt-6' : 'pt-0'
             }`}
           >
-            Past activity
+            Past receipts and bills
           </h2>
           {allGroups.map((g) => (
             <div key={g.month}>

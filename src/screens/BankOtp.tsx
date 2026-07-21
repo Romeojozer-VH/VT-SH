@@ -33,7 +33,7 @@ function Row({ label, value }: { label: string; value: string }) {
 export default function BankOtp() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { setPaid, setLegacyBillPaid } = usePayment()
+  const { setPaid, setLegacyBillPaid, setLegacyPaymentMethod } = usePayment()
   const [processing, setProcessing] = useState(false)
 
   const flow = (location.state as { flow?: PaymentFlowConfig } | null)?.flow
@@ -43,6 +43,7 @@ export default function BankOtp() {
     setTimeout(() => {
       if (flow?.setPaidOnSuccess !== false) setPaid(true)
       if (flow?.setLegacyBillPaidOnSuccess) setLegacyBillPaid(true)
+      if (flow?.legacyPaymentMethod) setLegacyPaymentMethod(flow.legacyPaymentMethod)
       navigate('/success', { state: { flow } })
     }, 2100)
   }

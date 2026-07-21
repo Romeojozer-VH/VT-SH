@@ -74,6 +74,10 @@ export interface PaymentFlowConfig {
       already be in its happy/no-overdue state while this bill is still
       outstanding. */
   setLegacyBillPaidOnSuccess?: boolean
+  /** Which method actually paid the Legacy bill, recorded alongside
+      setLegacyBillPaidOnSuccess so the transaction detail screen can show
+      the real method instead of always assuming PayNow. */
+  legacyPaymentMethod?: 'paynow' | CardBrand
   successTitle?: string
   successDescription?: string
   doneToLabel?: string
@@ -103,6 +107,10 @@ interface PaymentState {
       state and is already true for this persona from the start. */
   legacyBillPaid: boolean
   setLegacyBillPaid: (v: boolean) => void
+  /** Which method actually paid the Legacy bill — read by the transaction
+      detail screen. Null until the bill is paid. */
+  legacyPaymentMethod: 'paynow' | CardBrand | null
+  setLegacyPaymentMethod: (v: 'paynow' | CardBrand | null) => void
   deletedIds: string[]
   deleteCard: (id: string) => void
   addedCard: AddedCard | null
@@ -127,6 +135,8 @@ export const PaymentContext = createContext<PaymentState>({
   setUserType: () => {},
   legacyBillPaid: false,
   setLegacyBillPaid: () => {},
+  legacyPaymentMethod: null,
+  setLegacyPaymentMethod: () => {},
   deletedIds: [],
   deleteCard: () => {},
   addedCard: null,

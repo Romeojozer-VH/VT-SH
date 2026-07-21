@@ -65,7 +65,7 @@ function PayNowQr() {
 
 export default function LegacyPayNow() {
   const navigate = useNavigate()
-  const { setLegacyBillPaid } = usePayment()
+  const { setLegacyBillPaid, setLegacyPaymentMethod } = usePayment()
   const [toast, setToast] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState(EXPIRY_SECONDS)
 
@@ -182,6 +182,7 @@ export default function LegacyPayNow() {
         <button
           onClick={() => {
             setLegacyBillPaid(true)
+            setLegacyPaymentMethod('paynow')
             navigate(-2)
           }}
           className="h-14 w-full rounded-full bg-sh-green text-[16px] font-black text-sh-ink shadow-[0_16px_16px_-8px_rgba(20,20,20,0.1),0_4px_2px_rgba(20,20,20,0.05)] active:scale-[0.99]"

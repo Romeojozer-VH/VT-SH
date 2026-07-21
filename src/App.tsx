@@ -18,6 +18,7 @@ import CardUpdated from './screens/CardUpdated'
 import Gateway from './screens/Gateway'
 import Review from './screens/Review'
 import type { AddedCard, UpdateConfig, UserType } from './payment'
+import type { CardBrand } from './components/CardLogo'
 import Redirecting from './screens/Redirecting'
 import BankOtp from './screens/BankOtp'
 import Success from './screens/Success'
@@ -27,6 +28,8 @@ import AddEgiroAccount from './screens/AddEgiroAccount'
 import EgiroBankAuth from './screens/EgiroBankAuth'
 import LegacyBill from './screens/LegacyBill'
 import LegacyPayNow from './screens/LegacyPayNow'
+import TransactionDetail from './screens/TransactionDetail'
+import BillDetail from './screens/BillDetail'
 
 const STORAGE_KEY = 'sh-phone-framed'
 const FIT_KEY = 'sh-phone-fit'
@@ -86,6 +89,9 @@ export default function App() {
   const [paid, setPaid] = useState(true)
   const [userType, setUserType] = useState<UserType>('supernova')
   const [legacyBillPaid, setLegacyBillPaid] = useState(false)
+  const [legacyPaymentMethod, setLegacyPaymentMethod] = useState<
+    'paynow' | CardBrand | null
+  >(null)
   const [deletedIds, setDeletedIds] = useState<string[]>([])
   const deleteCard = (id: string) =>
     setDeletedIds((p) => (p.includes(id) ? p : [...p, id]))
@@ -169,6 +175,7 @@ export default function App() {
     setPaid(paidState)
     setUserType(userTypeState)
     setLegacyBillPaid(false)
+    setLegacyPaymentMethod(null)
     setDeletedIds([])
     setAddedCard(null)
     setUpdateCtx(null)
@@ -192,6 +199,8 @@ export default function App() {
         setUserType,
         legacyBillPaid,
         setLegacyBillPaid,
+        legacyPaymentMethod,
+        setLegacyPaymentMethod,
         deletedIds,
         deleteCard,
         addedCard,
@@ -390,6 +399,8 @@ export default function App() {
                 <Route path="/egiro-bank-auth" element={<EgiroBankAuth />} />
                 <Route path="/legacy-bill" element={<LegacyBill />} />
                 <Route path="/legacy-paynow" element={<LegacyPayNow />} />
+                <Route path="/transaction-detail" element={<TransactionDetail />} />
+                <Route path="/bill-detail" element={<BillDetail />} />
               </PageTransition>
             </PhoneFrame>
           )
