@@ -18,13 +18,13 @@ const DEFAULT_SERVICES: UpdateService[] = [
   { icon: ICON.internet, eyebrow: 'Broadband', title: '4 Haji Street' },
 ]
 const DEFAULT_OPTIONS: UpdateOption[] = [
-  { id: 'visa', brand: 'visa', last4: '1234', status: 'Expires 02/32' },
+  { id: 'amex', brand: 'amex', last4: '8824', status: 'Expires 04/28' },
   { id: 'mc', brand: 'mastercard', last4: '1112', status: 'Expires 06/28' },
 ]
 const DEFAULT_CURRENT: UpdateCurrent = {
-  brand: 'amex',
-  last4: '8824',
-  expires: 'Expires 04/28',
+  brand: 'visa',
+  last4: '1234',
+  expires: 'Expired 05/26',
   warn: true,
 }
 

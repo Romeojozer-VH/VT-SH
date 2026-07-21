@@ -63,10 +63,10 @@ export default function ManageCard() {
   const { setUpdateCtx, deleteCard } = usePayment()
   const card: CardInfo =
     (location.state as CardInfo) ?? {
-      id: 'amex',
-      brand: 'amex',
-      last4: '8824',
-      expires: 'Expires 04/28',
+      id: 'visa',
+      brand: 'visa',
+      last4: '1234',
+      expires: 'Expired 05/26',
       warn: true,
       connected: true,
     }
