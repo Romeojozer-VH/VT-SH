@@ -23,7 +23,6 @@ const services = [
     eyebrow: 'Broadband plan',
     title: '4 Haji Street, #01-234, Singapore 123456',
   },
-  { icon: ICON.payLater, eyebrow: 'PayLater plan', title: 'Apple iPhone 17 Pro' },
 ]
 
 function CardVisual({ card }: { card: CardInfo }) {

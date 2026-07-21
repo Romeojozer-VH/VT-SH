@@ -48,14 +48,6 @@ const groups: { label: string; items: ServiceItem[] }[] = [
       { icon: ICON.wifi, title: 'StarHub TV+', subtitle: 'Entertainment plan' },
     ],
   },
-  {
-    label: 'Pay Later plans',
-    items: [
-      { icon: ICON.payLater, title: 'Apple iPhone 17 Pro', subtitle: '12-month plan' },
-      { icon: ICON.payLater, title: 'Samsung Galaxy S26', subtitle: '24-month plan' },
-      { icon: ICON.payLater, title: 'iPad Pro 13"', subtitle: '12-month plan' },
-    ],
-  },
 ]
 
 export default function PaymentByServices() {

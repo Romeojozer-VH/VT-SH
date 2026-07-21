@@ -460,7 +460,7 @@ export default function Pay() {
               showPaymentDue ? 'pt-6' : 'pt-0'
             }`}
           >
-            Past payment activity
+            Past activity
           </h2>
           {allGroups.map((g) => (
             <div key={g.month}>

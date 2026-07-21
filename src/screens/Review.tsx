@@ -39,7 +39,7 @@ interface Card {
 
 const cards: Card[] = [
   { id: 'visa', brand: 'visa', last4: '1234', status: 'Expired 05/26', expired: true },
-  { id: 'amex', brand: 'amex', last4: '1234', status: 'Expires XX/XX' },
+  { id: 'amex', brand: 'amex', last4: '1234', status: 'Expires 04/28' },
   { id: 'mc', brand: 'mastercard', last4: '1234', status: 'Expires 04/28' },
 ]
 

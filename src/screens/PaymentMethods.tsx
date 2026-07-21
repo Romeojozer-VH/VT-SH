@@ -68,7 +68,7 @@ export default function PaymentMethods() {
           <AssetIcon src={ICON.arrow} size={22} className="rotate-180" />
         </button>
         <h1 className="mt-3 text-[28px] font-black leading-9 text-sh-ink">
-          My payment methods
+          Manage payment methods
         </h1>
       </div>
 
