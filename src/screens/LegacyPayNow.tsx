@@ -5,7 +5,14 @@ import StatusBar from '../components/StatusBar'
 import { SheetPortal } from '../components/sheetPortal'
 import { usePayment } from '../payment'
 
-const EXPIRY = '04mins 59secs'
+const EXPIRY_SECONDS = 4 * 60 + 59 // 04mins 59secs
+
+function formatExpiry(totalSeconds: number) {
+  const clamped = Math.max(0, totalSeconds)
+  const mins = Math.floor(clamped / 60)
+  const secs = clamped % 60
+  return `${String(mins).padStart(2, '0')}mins ${String(secs).padStart(2, '0')}secs`
+}
 
 /* Generic QR-code-look placeholder — deterministic module pattern with the
    three classic finder squares, not a real scannable code (this is a
@@ -48,13 +55,8 @@ function PayNowQr() {
       </svg>
       {/* PayNow badge */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="flex size-8 items-center justify-center rounded-[8px] bg-[#7B2D8E]">
-          <svg width="18" height="16" viewBox="0 0 18 16" fill="none" aria-hidden>
-            <path
-              d="M9 15.5C9 15.5 1 10.9 1 5.4C1 2.9 3 1 5.4 1C6.9 1 8.2 1.8 9 2.9C9.8 1.8 11.1 1 12.6 1C15 1 17 2.9 17 5.4C17 10.9 9 15.5 9 15.5Z"
-              fill="white"
-            />
-          </svg>
+        <div className="flex items-center justify-center rounded-[8px] bg-white p-1 shadow-[0_2px_4px_rgba(20,20,20,0.15)]">
+          <img src={ICON.payNowLogo} alt="PayNow" className="h-6 w-8 object-contain" />
         </div>
       </div>
     </div>
@@ -65,12 +67,30 @@ export default function LegacyPayNow() {
   const navigate = useNavigate()
   const { setLegacyBillPaid } = usePayment()
   const [toast, setToast] = useState(false)
+  const [secondsLeft, setSecondsLeft] = useState(EXPIRY_SECONDS)
 
   useEffect(() => {
     if (!toast) return
     const t = window.setTimeout(() => setToast(false), 3600)
     return () => window.clearTimeout(t)
   }, [toast])
+
+  // Real countdown, ticking from the moment the QR code is shown — the
+  // "Pay within" text and the save-to-photos toast both read from the same
+  // live value, so the toast reflects however much time was actually left
+  // when the user saved it.
+  useEffect(() => {
+    const t = window.setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          window.clearInterval(t)
+          return 0
+        }
+        return s - 1
+      })
+    }, 1000)
+    return () => window.clearInterval(t)
+  }, [])
 
   return (
     <div className="relative flex min-h-full flex-col bg-[#fafafa]">
@@ -129,7 +149,9 @@ export default function LegacyPayNow() {
             <p className="mt-2 text-[18px] font-bold leading-7 text-sh-green-text">
               $142.00
             </p>
-            <p className="text-[12px] leading-4 text-sh-ink">Pay within {EXPIRY}</p>
+            <p className="text-[12px] leading-4 text-sh-ink">
+              Pay within {formatExpiry(secondsLeft)}
+            </p>
           </div>
 
           <div className="mt-4 flex flex-col gap-1">
@@ -180,7 +202,8 @@ export default function LegacyPayNow() {
               <AssetIcon src={ICON.toastCheck} size={24} className="shrink-0" />
               <p className="text-[14px] leading-5 text-white">
                 QR code saved. Launch your banking app and upload the QR code to
-                complete your payment. Your QR code will expire in {EXPIRY}.
+                complete your payment. Your QR code will expire in{' '}
+                {formatExpiry(secondsLeft)}.
               </p>
             </div>
           </div>

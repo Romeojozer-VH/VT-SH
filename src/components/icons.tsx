@@ -94,6 +94,7 @@ export const ICON = {
   mobileSim: '/Icons/mobile-sim.svg',
   amex: '/Amex.jpg',
   egiro: '/eGiro-Latest.jpg',
+  payNowLogo: '/PayNow.jpg',
 } as const
 
 export const IMG = {

@@ -164,16 +164,11 @@ function Bill() {
 /* small PayNow badge — matches the mark used on the QR screen */
 function PayNowLogo() {
   return (
-    <span className="flex h-6 w-8 shrink-0 items-center justify-center">
-      <span className="flex size-5 items-center justify-center rounded-[6px] bg-[#7B2D8E]">
-        <svg width="11" height="10" viewBox="0 0 18 16" fill="none" aria-hidden>
-          <path
-            d="M9 15.5C9 15.5 1 10.9 1 5.4C1 2.9 3 1 5.4 1C6.9 1 8.2 1.8 9 2.9C9.8 1.8 11.1 1 12.6 1C15 1 17 2.9 17 5.4C17 10.9 9 15.5 9 15.5Z"
-            fill="white"
-          />
-        </svg>
-      </span>
-    </span>
+    <img
+      src={ICON.payNowLogo}
+      alt="PayNow"
+      className="h-6 w-8 shrink-0 object-contain"
+    />
   )
 }
 
