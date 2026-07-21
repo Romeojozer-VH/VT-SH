@@ -14,8 +14,8 @@ interface Method {
 }
 
 const methods: Method[] = [
-  { id: 'visa', brand: 'visa', last4: '1234', expires: 'Expires 02/28', connected: true },
-  { id: 'amex', brand: 'amex', last4: '8824', expires: 'Expires 04/28', warn: true, connected: true },
+  { id: 'visa', brand: 'visa', last4: '1234', expires: 'Expired 05/26', warn: true, connected: true },
+  { id: 'amex', brand: 'amex', last4: '8824', expires: 'Expires 04/28', connected: true },
   { id: 'mc', brand: 'mastercard', last4: '1112', expires: 'Expires 06/28', connected: false },
 ]
 
