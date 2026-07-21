@@ -71,7 +71,10 @@ const SCENARIO_GROUPS: ScenarioGroup[] = [
 export default function App() {
   const navigate = useNavigate()
   const location = useLocation()
-  const showNav = location.pathname === '/' || location.pathname === '/pay'
+  const showNav =
+    location.pathname === '/' ||
+    location.pathname === '/pay' ||
+    location.pathname === '/home'
   const [isMobile] = useState(detectMobile)
   const [framed, setFramed] = useState<boolean>(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
@@ -128,14 +131,6 @@ export default function App() {
     }, 260)
   }
   const showCardAdded = () => setCardAddedOpen(true)
-
-  // Fresh app load defaults to Pay, not Home — but only the very first
-  // mount; '/' still means Home for every navigation afterward (bottom nav,
-  // back button, etc.), this just redirects the initial landing.
-  useEffect(() => {
-    if (location.pathname === '/') navigate('/pay', { replace: true })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   useEffect(() => {
     if (!cardAddedOpen) return
@@ -381,8 +376,9 @@ export default function App() {
               }
             >
               <PageTransition key={resetKey}>
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<Pay />} />
                 <Route path="/pay" element={<Pay />} />
+                <Route path="/home" element={<Home />} />
                 <Route path="/payment-methods" element={<PaymentMethods />} />
                 <Route path="/payment-by-services" element={<PaymentByServices />} />
                 <Route path="/manage-card" element={<ManageCard />} />

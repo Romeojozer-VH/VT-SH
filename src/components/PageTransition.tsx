@@ -10,6 +10,7 @@ const DURATION = 300
 const NO_TRANSITION = new Set([
   '/',
   '/pay',
+  '/home',
   '/card-updated',
   '/gateway',
   '/redirecting',

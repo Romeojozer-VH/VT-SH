@@ -9,7 +9,7 @@ interface NavItem {
 }
 
 const items: NavItem[] = [
-  { src: ICON.navHome, activeSrc: ICON.navHomeActive, label: 'Home', path: '/' },
+  { src: ICON.navHome, activeSrc: ICON.navHomeActive, label: 'Home', path: '/home' },
   { src: ICON.navHub, label: 'My Hub' },
   { src: ICON.navPay, activeSrc: ICON.navPayActive, label: 'Pay', path: '/pay' },
   { src: ICON.navShop, label: 'Shop' },
@@ -29,7 +29,12 @@ export default function BottomNav({
   return (
     <nav className="flex items-center justify-around border-t border-sh-line/60 bg-white px-2 pb-6 pt-2">
       {items.map((item) => {
-        const active = item.path ? pathname === item.path : false
+        // Pay also renders at the bare '/' root (so a PWA's start_url
+        // never needs a path beyond the domain, avoiding a 404 on hosts
+        // with no SPA rewrite rule) — treat that as "Pay" being active too.
+        const active = item.path
+          ? pathname === item.path || (item.path === '/pay' && pathname === '/')
+          : false
         return (
           <button
             key={item.label}
