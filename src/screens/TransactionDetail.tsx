@@ -151,7 +151,7 @@ function Receipt({ data }: { data: TransactionDetailState }) {
               <p className="text-[14px] font-black leading-5 text-sh-ink">{data.amount}</p>
             </div>
 
-            <div className="h-px w-full bg-sh-line" />
+            <div className="h-px w-full bg-[#A8EDB2]" />
 
             <div className="flex flex-col gap-1">
               <p className="text-[14px] leading-5 text-[#727272]">Payment method</p>
