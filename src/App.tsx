@@ -123,6 +123,14 @@ export default function App() {
   }
   const showCardAdded = () => setCardAddedOpen(true)
 
+  // Fresh app load defaults to Pay, not Home — but only the very first
+  // mount; '/' still means Home for every navigation afterward (bottom nav,
+  // back button, etc.), this just redirects the initial landing.
+  useEffect(() => {
+    if (location.pathname === '/') navigate('/pay', { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
     if (!cardAddedOpen) return
     const t = window.setTimeout(closeCardAdded, 3200)
